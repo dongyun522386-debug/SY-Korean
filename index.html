@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국어 단어장 | Korean Vocabulary</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #0047A0; --primary-light: #1565C0; --primary-pale: #E3EDF8;
+    --accent: #CD2E3A; --accent-light: #FF6B6B;
+    --bg: #F4F8FF; --surface: #FFFFFF; --surface2: #F0F4FA;
+    --text: #1A2740; --text-muted: #5A6B8A;
+    --border: #D0DCF0; --shadow: rgba(0,71,160,.12);
+    --card-h: 220px; --radius: 14px; --transition: .3s ease;
+  }
+  .dark {
+    --primary:#5B9BFF; --primary-light:#82B4FF; --primary-pale:#1A2740;
+    --accent:#FF6B6B; --accent-light:#FF9999;
+    --bg:#0D1421; --surface:#1A2535; --surface2:#243045;
+    --text:#E8F0FF; --text-muted:#8AA0C0;
+    --border:#2D3F5C; --shadow:rgba(0,0,0,.4);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans KR','Noto Sans SC',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background var(--transition),color var(--transition); }
+
+  /* ── HEADER ── */
+  header { background:linear-gradient(135deg,var(--primary) 0%,#003080 100%); color:#fff; padding:0 24px; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(0,0,0,.25); }
+  .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; flex-wrap:wrap; }
+  .logo-area { display:flex; align-items:center; gap:12px; }
+  .logo-icon { width:44px; height:44px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .logo-text h1 { font-size:1.25rem; font-weight:700; line-height:1.2; }
+  .logo-text p  { font-size:.72rem; opacity:.8; margin-top:1px; }
+  .header-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .progress-pill { background:rgba(255,255,255,.18); border-radius:20px; padding:6px 14px; font-size:.82rem; white-space:nowrap; }
+  .progress-pill span { font-weight:700; font-size:1rem; }
+  .user-pill { background:rgba(255,255,255,.15); border-radius:20px; padding:5px 12px; font-size:.8rem; display:flex; align-items:center; gap:6px; }
+  .icon-btn { background:rgba(255,255,255,.18); border:none; cursor:pointer; border-radius:8px; width:36px; height:36px; font-size:17px; color:#fff; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+  .icon-btn:hover { background:rgba(255,255,255,.3); }
+  .admin-link-btn { background:rgba(255,215,0,.25); border:none; cursor:pointer; border-radius:8px; padding:6px 12px; font-size:.78rem; color:#fff; font-family:inherit; font-weight:600; transition:background .2s; }
+  .admin-link-btn:hover { background:rgba(255,215,0,.4); }
+
+  /* ── LOADING ── */
+  #loadingState { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 20px; gap:16px; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #loadingState p { color:var(--text-muted); font-size:.9rem; }
+
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+
+  /* ── TABS ── */
+  .tabs { display:flex; background:var(--surface); border-radius:var(--radius); padding:6px; box-shadow:0 2px 12px var(--shadow); margin-bottom:20px; overflow-x:auto; }
+  .tab-btn { flex:1; min-width:120px; background:transparent; border:none; cursor:pointer; padding:10px 8px; border-radius:10px; font-family:inherit; font-size:.88rem; font-weight:500; color:var(--text-muted); transition:all .2s; white-space:nowrap; text-align:center; }
+  .tab-btn .tab-count { display:inline-block; background:var(--border); border-radius:10px; padding:1px 7px; font-size:.72rem; margin-left:4px; transition:all .2s; }
+  .tab-btn.active { background:var(--primary); color:#fff; }
+  .tab-btn.active .tab-count { background:rgba(255,255,255,.3); }
+  .tab-btn:hover:not(.active) { background:var(--primary-pale); color:var(--primary); }
+
+  /* ── CONTROLS ── */
+  .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+  .search-wrap { position:relative; flex:1; min-width:200px; }
+  .search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--text-muted); }
+  #searchInput { width:100%; padding:10px 12px 10px 38px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font-family:inherit; font-size:.9rem; outline:none; transition:border-color .2s; }
+  #searchInput:focus { border-color:var(--primary); }
+  .filter-group { display:flex; gap:6px; flex-wrap:wrap; }
+  .filter-btn { padding:8px 14px; border:1.5px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-muted); font-family:inherit; font-size:.82rem; cursor:pointer; transition:all .2s; white-space:nowrap; }
+  .filter-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .filter-btn:hover:not(.active) { border-color:var(--primary); color:var(--primary); }
+  .sort-btn { padding:8px 14px; border:1.5px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-muted); font-family:inherit; font-size:.82rem; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+  .sort-btn.active { border-color:var(--accent); color:var(--accent); }
+  .quiz-btn { padding:8px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; }
+  .quiz-btn:hover { background:var(--accent-light); }
+
+  /* ── CARD GRID ── */
+  #cardGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+  .card-wrap { height:var(--card-h); perspective:1000px; cursor:pointer; }
+  .card-inner { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.4,0,.2,1); border-radius:var(--radius); }
+  .card-wrap.flipped .card-inner { transform:rotateY(180deg); }
+  .card-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:var(--radius); overflow:hidden; }
+  .card-front { background:var(--surface); border:1.5px solid var(--border); box-shadow:0 4px 18px var(--shadow); display:flex; flex-direction:column; padding:20px; justify-content:space-between; transition:box-shadow .2s; }
+  .card-wrap:hover .card-front { box-shadow:0 8px 28px var(--shadow); }
+  .card-back { background:linear-gradient(145deg,var(--primary) 0%,var(--primary-light) 100%); color:#fff; transform:rotateY(180deg); display:flex; flex-direction:column; padding:20px; justify-content:space-between; box-shadow:0 4px 18px var(--shadow); }
+  .card-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .level-badge { font-size:.7rem; font-weight:600; padding:3px 8px; border-radius:6px; }
+  .level-초급 { background:#E8F5E9; color:#2E7D32; }
+  .level-중급 { background:#FFF3E0; color:#E65100; }
+  .level-고급 { background:#FCE4EC; color:#C62828; }
+  .dark .level-초급 { background:#1B3D20; color:#81C784; }
+  .dark .level-중급 { background:#3D2800; color:#FFB74D; }
+  .dark .level-고급 { background:#3D1020; color:#EF9A9A; }
+  .card-actions { display:flex; gap:6px; }
+  .speak-btn, .check-btn { width:28px; height:28px; border:none; background:var(--surface2); border-radius:6px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .speak-btn:hover { background:var(--primary-pale); }
+  .check-btn.checked { background:#E8F5E9; }
+  .dark .check-btn.checked { background:#1B3D20; }
+  .card-middle { text-align:center; }
+  .word-kr  { font-size:2rem; font-weight:700; color:var(--text); line-height:1.1; }
+  .word-rom { font-size:.82rem; color:var(--text-muted); margin-top:4px; font-style:italic; }
+  .card-bottom { text-align:center; }
+  .flip-hint { font-size:.72rem; color:var(--text-muted); }
+  .back-top { display:flex; justify-content:space-between; align-items:center; }
+  .back-label { font-size:.72rem; opacity:.7; }
+  .back-check-btn { width:28px; height:28px; border:1.5px solid rgba(255,255,255,.5); background:transparent; border-radius:6px; cursor:pointer; font-size:14px; color:#fff; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .back-check-btn.checked { background:rgba(255,255,255,.25); }
+  .word-zh { font-size:1.6rem; font-weight:600; text-align:center; }
+  .example-block { background:rgba(0,0,0,.18); border-radius:8px; padding:10px 12px; }
+  .example-kr { font-size:.82rem; margin-bottom:3px; }
+  .example-zh { font-size:.78rem; opacity:.8; }
+
+  /* ── EMPTY / ERROR ── */
+  .empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .empty-state p { font-size:1.1rem; margin-top:12px; }
+
+  /* ── QUIZ MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open { display:flex; }
+  .quiz-modal { background:var(--surface); border-radius:20px; padding:32px; max-width:480px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .quiz-modal h2 { font-size:1.1rem; color:var(--text-muted); margin-bottom:4px; }
+  .quiz-score { font-size:.85rem; color:var(--text-muted); margin-bottom:20px; }
+  .quiz-word { text-align:center; margin:20px 0; padding:24px; background:var(--primary-pale); border-radius:var(--radius); }
+  .quiz-word .word-kr  { font-size:2.2rem; color:var(--primary); }
+  .quiz-word .word-rom { color:var(--text-muted); margin-top:6px; }
+  .quiz-options { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; }
+  .quiz-opt { padding:14px 10px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); font-family:inherit; font-size:.95rem; cursor:pointer; transition:all .2s; text-align:center; }
+  .quiz-opt:hover:not(:disabled) { border-color:var(--primary); background:var(--primary-pale); }
+  .quiz-opt.correct { border-color:#4CAF50; background:#E8F5E9; color:#2E7D32; }
+  .quiz-opt.wrong   { border-color:#F44336; background:#FFEBEE; color:#C62828; }
+  .dark .quiz-opt.correct { background:#1B3D20; color:#81C784; }
+  .dark .quiz-opt.wrong   { background:#3D1020; color:#EF9A9A; }
+  .quiz-feedback { text-align:center; font-size:1rem; font-weight:600; min-height:24px; margin-bottom:10px; }
+  .quiz-controls { display:flex; gap:10px; justify-content:center; }
+  .quiz-next-btn  { padding:10px 28px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer; transition:background .2s; }
+  .quiz-next-btn:hover  { background:var(--primary-light); }
+  .quiz-close-btn { padding:10px 20px; background:var(--surface2); color:var(--text-muted); border:none; border-radius:10px; font-family:inherit; font-size:.9rem; cursor:pointer; }
+  .quiz-close-btn:hover { background:var(--border); }
+
+  /* ── TIPS ── */
+  .tips-section { margin-top:36px; background:var(--surface); border-radius:var(--radius); border:1.5px solid var(--border); overflow:hidden; }
+  .tips-header { padding:14px 20px; background:var(--primary-pale); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+  .tips-header h3 { font-size:.95rem; color:var(--primary); font-weight:600; }
+  .tips-body { padding:0 20px; max-height:0; overflow:hidden; transition:max-height .4s ease,padding .3s ease; }
+  .tips-body.open { max-height:600px; padding:16px 20px; }
+  .tip-item { margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+  .tip-item:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .tip-title { font-weight:600; font-size:.88rem; color:var(--primary); margin-bottom:4px; }
+  .tip-desc  { font-size:.82rem; color:var(--text-muted); line-height:1.6; }
+  .tip-example { font-size:.8rem; color:var(--accent); margin-top:3px; font-style:italic; }
+
+  footer { text-align:center; padding:20px; font-size:.75rem; color:var(--text-muted); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  @media(max-width:600px) {
+    #cardGrid { grid-template-columns:1fr 1fr; }
+    .quiz-options { grid-template-columns:1fr; }
+  }
+  @media(max-width:420px) { #cardGrid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">🇰🇷</div>
+      <div class="logo-text">
+        <h1>한국어 단어장 · Korean Vocabulary</h1>
+        <p>中文学习者向 韩国语词汇应用</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="progress-pill">오늘 학습한 단어: <span id="learnedCount">0</span>개</div>
+      <div class="user-pill">👤 <span id="userName">...</span></div>
+      <button class="admin-link-btn" id="adminLink" style="display:none" onclick="window.location.href='admin.html'">🛠 관리</button>
+      <button class="icon-btn" id="darkToggle" title="다크모드">🌙</button>
+      <button class="icon-btn" id="logoutBtn"  title="로그아웃">🚪</button>
+    </div>
+  </div>
+</header>
+
+<!-- Loading -->
+<div id="loadingState">
+  <div class="spinner"></div>
+  <p>단어를 불러오는 중... / 加载单词中...</p>
+</div>
+
+<main id="mainContent" style="display:none">
+  <!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="nouns"      role="tab">명사      <span class="tab-count" id="cnt-nouns">0</span></button>
+    <button class="tab-btn"        data-tab="verbs"      role="tab">동사      <span class="tab-count" id="cnt-verbs">0</span></button>
+    <button class="tab-btn"        data-tab="adjectives" role="tab">형용사   <span class="tab-count" id="cnt-adjectives">0</span></button>
+    <button class="tab-btn"        data-tab="fixed"      role="tab">고정표현 <span class="tab-count" id="cnt-fixed">0</span></button>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input id="searchInput" type="text" placeholder="한국어 또는 중국어로 검색... / 搜索">
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn active" data-level="전체">전체</button>
+      <button class="filter-btn" data-level="초급">초급</button>
+      <button class="filter-btn" data-level="중급">중급</button>
+      <button class="filter-btn" data-level="고급">고급</button>
+    </div>
+    <button class="sort-btn"  id="sortBtn">가나다순 ↕</button>
+    <button class="quiz-btn"  id="quizBtn">🎯 퀴즈 모드</button>
+  </div>
+
+  <div id="cardGrid"></div>
+
+  <!-- Pronunciation Tips -->
+  <div class="tips-section">
+    <div class="tips-header" id="tipsToggle">
+      <h3>📖 한국어 발음 가이드 · 韩语发音指南</h3><span>▼</span>
+    </div>
+    <div class="tips-body" id="tipsBody">
+      <div class="tip-item">
+        <div class="tip-title">연음 (Liaison / 连音)</div>
+        <div class="tip-desc">받침(종성)으로 끝나는 단어 뒤에 모음이 오면 받침이 다음 음절 초성으로 이어져 발음됩니다.<br>当以收音结尾的词后面接元音时，收音会转移到下一个音节。</div>
+        <div class="tip-example">예: 먹어요 → [머거요], 읽어요 → [일거요]</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-title">경음화 (Fortis / 紧音化)</div>
+        <div class="tip-desc">받침 ㄱ,ㄷ,ㅂ 뒤에 예사소리가 오면 된소리로 변합니다.<br>收音ㄱ,ㄷ,ㅂ后接平音时变为紧音。</div>
+        <div class="tip-example">예: 학교 → [학꾜], 식당 → [식땅]</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-title">비음화 (Nasalization / 鼻音化)</div>
+        <div class="tip-desc">받침 ㄱ,ㄷ,ㅂ 뒤에 ㄴ,ㅁ이 오면 ㅇ,ㄴ,ㅁ으로 변합니다.<br>收音ㄱ,ㄷ,ㅂ后接鼻音ㄴ,ㅁ时发生鼻音化。</div>
+        <div class="tip-example">예: 국민 → [궁민], 입문 → [임문]</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-title">격음화 (Aspiration / 激音化)</div>
+        <div class="tip-desc">ㅎ과 예사소리가 만나면 거센소리로 변합니다.<br>ㅎ与平音相遇时变为激音。</div>
+        <div class="tip-example">예: 좋다 → [조타], 많다 → [만타]</div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-title">ㅢ 발음 (Pronunciation of ㅢ)</div>
+        <div class="tip-desc">단어 첫음절의 ㅢ는 [ㅢ], 이후는 [ㅣ], 조사로 쓰일 때는 [ㅔ]로 발음합니다.<br>词首ㅢ发[ㅢ]，其他位置发[ㅣ]，用作助词时发[ㅔ]。</div>
+        <div class="tip-example">예: 의사 → [의사], 회의 → [회이], 나의 → [나에]</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- QUIZ MODAL -->
+<div class="modal-overlay" id="quizOverlay">
+  <div class="quiz-modal">
+    <h2>🎯 퀴즈 모드 · 测验模式</h2>
+    <div class="quiz-score" id="quizScore">점수: 0 / 0</div>
+    <div class="quiz-word">
+      <div class="word-kr"  id="qWord"></div>
+      <div class="word-rom" id="qRom"></div>
+    </div>
+    <div class="quiz-options"  id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <div class="quiz-controls">
+      <button class="quiz-next-btn"  id="quizNextBtn">다음 →</button>
+      <button class="quiz-close-btn" id="quizCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<footer>한국어 단어장 · Korean Vocabulary App &nbsp;|&nbsp; 중국인 학습자를 위한 한국어 학습 플랫폼</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+//  SUPABASE INIT
+// ════════════════════════════════════════════════════════
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let vocabulary   = { nouns:[], verbs:[], adjectives:[], fixed:[] };
+let learnedWords = new Set();   // stores word UUIDs
+let currentUser  = null;
+let isAdmin      = false;
+let currentTab   = 'nouns';
+let currentLevel = '전체';
+let sortAlpha    = false;
+let searchQuery  = '';
+let darkMode     = localStorage.getItem('dark_mode') === 'true';
+let quizScore    = 0;
+let quizTotal    = 0;
+let quizAnswered = false;
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+async function init() {
+  applyDarkMode();
+
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+
+  // Load profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  const displayName = profile?.display_name || user.email.split('@')[0];
+  document.getElementById('userName').textContent = displayName;
+  if (profile?.role === 'admin') {
+    isAdmin = true;
+    document.getElementById('adminLink').style.display = '';
+  }
+
+  // Load words
+  const { data: words, error: wErr } = await sb.from('words').select('*').order('category').order('sort_order');
+  if (wErr) { showLoadError(wErr.message); return; }
+
+  // Build vocabulary map
+  (words || []).forEach(w => {
+    if (vocabulary[w.category]) vocabulary[w.category].push(w);
+  });
+
+  // Load progress
+  const { data: progress } = await sb.from('user_progress').select('word_id').eq('user_id', user.id).eq('learned', true);
+  learnedWords = new Set((progress || []).map(p => p.word_id));
+
+  // Show app
+  document.getElementById('loadingState').style.display  = 'none';
+  document.getElementById('mainContent').style.display   = '';
+
+  updateTabCounts();
+  renderCards();
+  bindEvents();
+  updateProgress();
+}
+
+function showLoadError(msg) {
+  document.getElementById('loadingState').innerHTML = `
+    <div style="font-size:3rem">⚠️</div>
+    <p style="color:var(--accent)">데이터를 불러오지 못했습니다.<br><small>${msg}</small></p>
+    <p style="font-size:.82rem;color:var(--text-muted)">supabase-config.js 설정을 확인하세요.</p>`;
+}
+
+function applyDarkMode() {
+  document.body.classList.toggle('dark', darkMode);
+  document.getElementById('darkToggle').textContent = darkMode ? '☀️' : '🌙';
+}
+
+function updateTabCounts() {
+  Object.entries(vocabulary).forEach(([tab, words]) => {
+    const el = document.getElementById('cnt-' + tab);
+    if (el) el.textContent = words.length;
+  });
+}
+
+function updateProgress() {
+  document.getElementById('learnedCount').textContent = learnedWords.size;
+}
+
+// ════════════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════════════
+function getFilteredWords() {
+  let words = [...(vocabulary[currentTab] || [])];
+  if (currentLevel !== '전체') words = words.filter(w => w.level === currentLevel);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    words = words.filter(w =>
+      w.korean.toLowerCase().includes(q) ||
+      w.chinese.includes(q) ||
+      w.romanization.toLowerCase().includes(q)
+    );
+  }
+  if (sortAlpha) words.sort((a, b) => a.korean.localeCompare(b.korean, 'ko'));
+  return words;
+}
+
+function renderCards() {
+  const grid  = document.getElementById('cardGrid');
+  const words = getFilteredWords();
+  if (!words.length) {
+    grid.innerHTML = '<div class="empty-state"><div style="font-size:3rem">🔍</div><p>검색 결과가 없어요. / 没有搜索结果。</p></div>';
+    return;
+  }
+  grid.innerHTML = words.map(w => buildCard(w)).join('');
+}
+
+function buildCard(w) {
+  const learned = learnedWords.has(w.id);
+  const chkEmoji = learned ? '✅' : '⬜';
+  return `
+  <div class="card-wrap" data-id="${w.id}" onclick="handleCardClick(event,this)">
+    <div class="card-inner">
+      <div class="card-face card-front">
+        <div class="card-top">
+          <span class="level-badge level-${esc(w.level)}">${esc(w.level)}</span>
+          <div class="card-actions">
+            <button class="speak-btn" onclick="speakWord(event,'${esc(w.korean)}')" title="발음 듣기">🔊</button>
+            <button class="check-btn ${learned?'checked':''}" onclick="toggleLearned(event,'${w.id}')">${chkEmoji}</button>
+          </div>
+        </div>
+        <div class="card-middle">
+          <div class="word-kr">${esc(w.korean)}</div>
+          <div class="word-rom">[${esc(w.romanization)}]</div>
+        </div>
+        <div class="card-bottom"><span class="flip-hint">클릭하면 뜻이 나와요 · 点击查看意思</span></div>
+      </div>
+      <div class="card-face card-back">
+        <div class="back-top">
+          <span class="back-label">${esc(w.korean)} · ${esc(w.romanization)}</span>
+          <button class="back-check-btn ${learned?'checked':''}" onclick="toggleLearned(event,'${w.id}')">${chkEmoji}</button>
+        </div>
+        <div class="word-zh">${esc(w.chinese)}</div>
+        <div class="example-block">
+          <div class="example-kr">📝 ${esc(w.example_kr||'')}</div>
+          <div class="example-zh">🇨🇳 ${esc(w.example_zh||'')}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ════════════════════════════════════════════════════════
+//  INTERACTIONS
+// ════════════════════════════════════════════════════════
+function handleCardClick(e, cardEl) {
+  if (e.target.closest('button')) return;
+  cardEl.classList.toggle('flipped');
+}
+
+function speakWord(e, word) {
+  e.stopPropagation();
+  if (!window.speechSynthesis) return;
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang = 'ko-KR'; utter.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+async function toggleLearned(e, wordId) {
+  e.stopPropagation();
+  const isLearned = learnedWords.has(wordId);
+  if (isLearned) {
+    learnedWords.delete(wordId);
+  } else {
+    learnedWords.add(wordId);
+  }
+  updateProgress();
+
+  // Update UI on this card without full re-render
+  const card = document.querySelector(`[data-id="${wordId}"]`);
+  if (card) {
+    const learned  = learnedWords.has(wordId);
+    const emoji    = learned ? '✅' : '⬜';
+    card.querySelectorAll('.check-btn, .back-check-btn').forEach(btn => {
+      btn.textContent = emoji;
+      btn.classList.toggle('checked', learned);
+    });
+  }
+
+  // Persist to Supabase
+  await sb.from('user_progress').upsert(
+    { user_id: currentUser.id, word_id: wordId, learned: !isLearned, learned_at: !isLearned ? new Date().toISOString() : null },
+    { onConflict: 'user_id,word_id' }
+  );
+}
+
+// ════════════════════════════════════════════════════════
+//  QUIZ
+// ════════════════════════════════════════════════════════
+function startQuiz() {
+  quizAnswered = false;
+  const all = Object.values(vocabulary).flat();
+  if (all.length < 4) return;
+
+  const correct = all[Math.floor(Math.random() * all.length)];
+  const wrongs  = all.filter(w => w.id !== correct.id).sort(() => Math.random() - .5).slice(0, 3);
+  const options = [...wrongs, correct].sort(() => Math.random() - .5);
+
+  document.getElementById('qWord').textContent  = correct.korean;
+  document.getElementById('qRom').textContent   = '[' + correct.romanization + ']';
+  document.getElementById('quizFeedback').textContent = '';
+
+  document.getElementById('quizOptions').innerHTML = options.map(opt => `
+    <button class="quiz-opt" onclick="answerQuiz(this,'${esc(opt.id)}','${esc(correct.id)}')">${esc(opt.chinese)}</button>
+  `).join('');
+
+  document.getElementById('quizOverlay').classList.add('open');
+  document.getElementById('quizScore').textContent = `점수: ${quizScore} / ${quizTotal}`;
+}
+
+function answerQuiz(btn, chosenId, correctId) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  quizTotal++;
+  const feedback = document.getElementById('quizFeedback');
+  if (chosenId === correctId) {
+    quizScore++;
+    btn.classList.add('correct');
+    feedback.textContent = '🎉 정답이에요! 正确！';
+    feedback.style.color = '#4CAF50';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-opt').forEach(b => {
+      if (b.getAttribute('onclick').includes(correctId)) b.classList.add('correct');
+    });
+    feedback.textContent = '❌ 틀렸어요. 加油！';
+    feedback.style.color = 'var(--accent)';
+  }
+  document.getElementById('quizScore').textContent = `점수: ${quizScore} / ${quizTotal}`;
+}
+
+// ════════════════════════════════════════════════════════
+//  EVENTS
+// ════════════════════════════════════════════════════════
+function bindEvents() {
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      renderCards();
+    });
+  });
+  // Filters
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLevel = btn.dataset.level;
+      renderCards();
+    });
+  });
+  // Sort
+  document.getElementById('sortBtn').addEventListener('click', () => {
+    sortAlpha = !sortAlpha;
+    document.getElementById('sortBtn').classList.toggle('active', sortAlpha);
+    renderCards();
+  });
+  // Search
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    renderCards();
+  });
+  // Quiz
+  document.getElementById('quizBtn').addEventListener('click', () => {
+    quizScore = 0; quizTotal = 0;
+    startQuiz();
+  });
+  document.getElementById('quizNextBtn').addEventListener('click', startQuiz);
+  document.getElementById('quizCloseBtn').addEventListener('click', () => {
+    document.getElementById('quizOverlay').classList.remove('open');
+  });
+  document.getElementById('quizOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
+  // Dark mode
+  document.getElementById('darkToggle').addEventListener('click', () => {
+    darkMode = !darkMode;
+    localStorage.setItem('dark_mode', darkMode);
+    applyDarkMode();
+  });
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'login.html';
+  });
+  // Tips
+  document.getElementById('tipsToggle').addEventListener('click', () => {
+    document.getElementById('tipsBody').classList.toggle('open');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

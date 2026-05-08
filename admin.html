@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 패널 · 한국어 단어장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#0047A0; --primary-light:#1565C0; --primary-pale:#E3EDF8;
+    --accent:#CD2E3A;
+    --bg:#F4F8FF; --surface:#fff; --surface2:#F0F4FA;
+    --text:#1A2740; --text-muted:#5A6B8A;
+    --border:#D0DCF0; --shadow:rgba(0,71,160,.12);
+    --radius:14px;
+    --green:#2E7D32; --green-bg:#E8F5E9;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans KR','Noto Sans SC',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  header {
+    background:linear-gradient(135deg,var(--primary) 0%,#003080 100%);
+    color:#fff; padding:0 24px;
+    position:sticky; top:0; z-index:100;
+    box-shadow:0 2px 16px rgba(0,0,0,.25);
+  }
+  .hdr { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:14px 0; gap:12px; }
+  .hdr-left { display:flex; align-items:center; gap:12px; }
+  .hdr-icon { width:40px; height:40px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .hdr h1 { font-size:1.1rem; font-weight:700; }
+  .hdr p  { font-size:0.72rem; opacity:.8; }
+  .hdr-right { display:flex; gap:8px; }
+  .hdr-btn {
+    padding:7px 14px; border:none; border-radius:8px;
+    font-family:inherit; font-size:0.82rem; font-weight:600;
+    cursor:pointer; transition:background .2s;
+  }
+  .btn-outline { background:rgba(255,255,255,.18); color:#fff; }
+  .btn-outline:hover { background:rgba(255,255,255,.3); }
+
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+
+  /* stats bar */
+  .stats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px; }
+  .stat-card {
+    background:var(--surface); border-radius:var(--radius);
+    border:1.5px solid var(--border);
+    padding:16px 20px; flex:1; min-width:140px;
+    box-shadow:0 2px 8px var(--shadow);
+  }
+  .stat-card .num { font-size:2rem; font-weight:700; color:var(--primary); }
+  .stat-card .lbl { font-size:0.78rem; color:var(--text-muted); margin-top:2px; }
+
+  /* controls */
+  .controls {
+    background:var(--surface); border-radius:var(--radius);
+    border:1.5px solid var(--border); padding:16px 20px;
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    margin-bottom:20px; box-shadow:0 2px 8px var(--shadow);
+  }
+  .search-wrap { position:relative; flex:1; min-width:180px; }
+  .search-wrap svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+  #searchInput {
+    width:100%; padding:9px 12px 9px 36px;
+    border:1.5px solid var(--border); border-radius:9px;
+    font-family:inherit; font-size:0.88rem; color:var(--text);
+    background:var(--surface); outline:none; transition:border-color .2s;
+  }
+  #searchInput:focus { border-color:var(--primary); }
+  select {
+    padding:9px 12px; border:1.5px solid var(--border); border-radius:9px;
+    background:var(--surface); color:var(--text);
+    font-family:inherit; font-size:0.88rem; cursor:pointer; outline:none;
+  }
+  .add-btn {
+    padding:9px 18px; background:var(--primary); color:#fff;
+    border:none; border-radius:9px;
+    font-family:inherit; font-size:0.88rem; font-weight:600;
+    cursor:pointer; transition:background .2s; white-space:nowrap;
+  }
+  .add-btn:hover { background:var(--primary-light); }
+
+  /* word table */
+  .table-wrap {
+    background:var(--surface); border-radius:var(--radius);
+    border:1.5px solid var(--border); overflow:hidden;
+    box-shadow:0 2px 8px var(--shadow);
+  }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    padding:12px 14px; text-align:left;
+    font-size:0.78rem; font-weight:600; color:var(--text-muted);
+    background:var(--surface2); border-bottom:1.5px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody tr { border-bottom:1px solid var(--border); transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--primary-pale); }
+  td { padding:12px 14px; font-size:0.88rem; vertical-align:middle; }
+  .td-korean { font-size:1.05rem; font-weight:600; }
+  .td-rom    { font-size:0.78rem; color:var(--text-muted); margin-top:2px; }
+  .level-badge {
+    display:inline-block; font-size:0.7rem; font-weight:600;
+    padding:2px 7px; border-radius:5px;
+  }
+  .level-초급 { background:#E8F5E9; color:#2E7D32; }
+  .level-중급 { background:#FFF3E0; color:#E65100; }
+  .level-고급 { background:#FCE4EC; color:#C62828; }
+  .cat-badge {
+    display:inline-block; font-size:0.7rem; padding:2px 7px;
+    border-radius:5px; background:var(--primary-pale); color:var(--primary); font-weight:500;
+  }
+  .action-btns { display:flex; gap:6px; }
+  .edit-btn, .del-btn {
+    padding:5px 12px; border:none; border-radius:7px;
+    font-family:inherit; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all .2s;
+  }
+  .edit-btn { background:var(--primary-pale); color:var(--primary); }
+  .edit-btn:hover { background:var(--primary); color:#fff; }
+  .del-btn  { background:#FFF0F0; color:var(--accent); }
+  .del-btn:hover { background:var(--accent); color:#fff; }
+  .empty-row td { text-align:center; padding:40px; color:var(--text-muted); font-size:0.9rem; }
+
+  /* modal */
+  .overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.55);
+    backdrop-filter:blur(4px); z-index:200;
+    display:none; align-items:center; justify-content:center; padding:16px;
+  }
+  .overlay.open { display:flex; }
+  .modal {
+    background:var(--surface); border-radius:20px; padding:28px;
+    width:100%; max-width:520px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35); max-height:90vh; overflow-y:auto;
+  }
+  .modal h2 { font-size:1.1rem; margin-bottom:20px; color:var(--primary); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:0.8rem; font-weight:500; color:var(--text-muted); margin-bottom:5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:9px 12px;
+    border:1.5px solid var(--border); border-radius:9px;
+    font-family:inherit; font-size:0.88rem; color:var(--text);
+    background:var(--surface); outline:none; transition:border-color .2s;
+    resize:vertical;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--primary); }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:4px; }
+  .save-btn {
+    padding:10px 24px; background:var(--primary); color:#fff;
+    border:none; border-radius:9px;
+    font-family:inherit; font-size:0.9rem; font-weight:600; cursor:pointer; transition:background .2s;
+  }
+  .save-btn:hover { background:var(--primary-light); }
+  .save-btn:disabled { opacity:.6; cursor:not-allowed; }
+  .cancel-btn {
+    padding:10px 18px; background:var(--surface2); color:var(--text-muted);
+    border:none; border-radius:9px; font-family:inherit; font-size:0.9rem; cursor:pointer;
+  }
+  .cancel-btn:hover { background:var(--border); }
+
+  .toast {
+    position:fixed; bottom:24px; right:24px; z-index:300;
+    background:#1A2740; color:#fff; padding:12px 20px;
+    border-radius:10px; font-size:0.88rem;
+    box-shadow:0 6px 20px rgba(0,0,0,.3);
+    transform:translateY(80px); opacity:0; transition:all .3s;
+    pointer-events:none;
+  }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  .spinner-overlay {
+    position:fixed; inset:0; background:rgba(255,255,255,.75);
+    display:none; align-items:center; justify-content:center; z-index:400;
+  }
+  .spinner-overlay.open { display:flex; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media(max-width:700px) {
+    .form-row { grid-template-columns:1fr; }
+    td:nth-child(3), th:nth-child(3),
+    td:nth-child(4), th:nth-child(4) { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-icon">🛠️</div>
+      <div>
+        <h1>관리자 패널 · Admin Panel</h1>
+        <p id="adminEmail">로딩 중...</p>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-btn btn-outline" onclick="window.location.href='index.html'">← 단어장</button>
+      <button class="hdr-btn btn-outline" id="logoutBtn">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card"><div class="num" id="totalCount">-</div><div class="lbl">전체 단어</div></div>
+    <div class="stat-card"><div class="num" id="nounCount">-</div><div class="lbl">명사</div></div>
+    <div class="stat-card"><div class="num" id="verbCount">-</div><div class="lbl">동사</div></div>
+    <div class="stat-card"><div class="num" id="adjCount">-</div><div class="lbl">형용사</div></div>
+    <div class="stat-card"><div class="num" id="fixedCount">-</div><div class="lbl">고정표현</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input id="searchInput" type="text" placeholder="단어 검색...">
+    </div>
+    <select id="catFilter">
+      <option value="">전체 카테고리</option>
+      <option value="nouns">명사</option>
+      <option value="verbs">동사</option>
+      <option value="adjectives">형용사</option>
+      <option value="fixed">고정표현</option>
+    </select>
+    <select id="levelFilter">
+      <option value="">전체 난이도</option>
+      <option value="초급">초급</option>
+      <option value="중급">중급</option>
+      <option value="고급">고급</option>
+    </select>
+    <button class="add-btn" onclick="openModal()">+ 새 단어 추가</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>한국어</th>
+          <th>중국어</th>
+          <th>카테고리</th>
+          <th>난이도</th>
+          <th>예문</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="wordTableBody">
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">로딩 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Word Edit/Add Modal -->
+<div class="overlay" id="wordModal">
+  <div class="modal">
+    <h2 id="modalTitle">새 단어 추가</h2>
+    <input type="hidden" id="editId">
+    <div class="form-row">
+      <div class="form-group">
+        <label>한국어 *</label>
+        <input type="text" id="fKorean" placeholder="예: 친구">
+      </div>
+      <div class="form-group">
+        <label>로마자 발음 *</label>
+        <input type="text" id="fRom" placeholder="예: chin-gu">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>중국어 뜻 *</label>
+        <input type="text" id="fChinese" placeholder="예: 朋友">
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group" style="margin-bottom:0">
+          <label>카테고리 *</label>
+          <select id="fCategory">
+            <option value="nouns">명사</option>
+            <option value="verbs">동사</option>
+            <option value="adjectives">형용사</option>
+            <option value="fixed">고정표현</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>난이도 *</label>
+          <select id="fLevel">
+            <option value="초급">초급</option>
+            <option value="중급">중급</option>
+            <option value="고급">고급</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>예문 (한국어)</label>
+      <input type="text" id="fExKr" placeholder="예: 친구를 만나요.">
+    </div>
+    <div class="form-group">
+      <label>예문 (중국어)</label>
+      <input type="text" id="fExZh" placeholder="예: 我见朋友。">
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">취소</button>
+      <button class="save-btn" id="saveBtn" onclick="saveWord()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spinnerOverlay"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let allWords = [];
+let currentUser = null;
+
+const CAT_LABEL = { nouns:'명사', verbs:'동사', adjectives:'형용사', fixed:'고정표현' };
+
+// ── Auth check ─────────────────────────────────────────
+(async () => {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (!profile || profile.role !== 'admin') {
+    alert('관리자만 접근할 수 있습니다. / 只有管理员才能访问。');
+    window.location.href = 'index.html';
+    return;
+  }
+  document.getElementById('adminEmail').textContent = profile.email || user.email;
+  await loadWords();
+  bindEvents();
+})();
+
+// ── Load words ─────────────────────────────────────────
+async function loadWords() {
+  showSpinner(true);
+  const { data, error } = await sb.from('words').select('*').order('category').order('sort_order');
+  showSpinner(false);
+  if (error) { showToast('단어 불러오기 실패: ' + error.message); return; }
+  allWords = data || [];
+  updateStats();
+  renderTable();
+}
+
+function updateStats() {
+  document.getElementById('totalCount').textContent = allWords.length;
+  document.getElementById('nounCount').textContent  = allWords.filter(w => w.category === 'nouns').length;
+  document.getElementById('verbCount').textContent  = allWords.filter(w => w.category === 'verbs').length;
+  document.getElementById('adjCount').textContent   = allWords.filter(w => w.category === 'adjectives').length;
+  document.getElementById('fixedCount').textContent = allWords.filter(w => w.category === 'fixed').length;
+}
+
+// ── Render table ───────────────────────────────────────
+function renderTable() {
+  const q    = document.getElementById('searchInput').value.toLowerCase();
+  const cat  = document.getElementById('catFilter').value;
+  const lvl  = document.getElementById('levelFilter').value;
+
+  let list = allWords.filter(w => {
+    const matchSearch = !q || w.korean.toLowerCase().includes(q) || w.chinese.includes(q);
+    const matchCat    = !cat || w.category === cat;
+    const matchLvl    = !lvl || w.level === lvl;
+    return matchSearch && matchCat && matchLvl;
+  });
+
+  const tbody = document.getElementById('wordTableBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">🔍 검색 결과가 없어요.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(w => `
+    <tr>
+      <td>
+        <div class="td-korean">${esc(w.korean)}</div>
+        <div class="td-rom">[${esc(w.romanization)}]</div>
+      </td>
+      <td>${esc(w.chinese)}</td>
+      <td><span class="cat-badge">${CAT_LABEL[w.category] || w.category}</span></td>
+      <td><span class="level-badge level-${esc(w.level)}">${esc(w.level)}</span></td>
+      <td style="font-size:.8rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${esc(w.example_kr || '')}
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="edit-btn" onclick="openModal('${w.id}')">편집</button>
+          <button class="del-btn"  onclick="deleteWord('${w.id}','${esc(w.korean)}')">삭제</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── Modal ──────────────────────────────────────────────
+function openModal(wordId) {
+  document.getElementById('wordModal').classList.add('open');
+  if (wordId) {
+    const w = allWords.find(x => x.id === wordId);
+    if (!w) return;
+    document.getElementById('modalTitle').textContent = '단어 편집';
+    document.getElementById('editId').value     = w.id;
+    document.getElementById('fKorean').value    = w.korean;
+    document.getElementById('fRom').value       = w.romanization;
+    document.getElementById('fChinese').value   = w.chinese;
+    document.getElementById('fCategory').value  = w.category;
+    document.getElementById('fLevel').value     = w.level;
+    document.getElementById('fExKr').value      = w.example_kr || '';
+    document.getElementById('fExZh').value      = w.example_zh || '';
+  } else {
+    document.getElementById('modalTitle').textContent = '새 단어 추가';
+    document.getElementById('editId').value = '';
+    ['fKorean','fRom','fChinese','fExKr','fExZh'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fCategory').value = 'nouns';
+    document.getElementById('fLevel').value    = '초급';
+  }
+}
+function closeModal() { document.getElementById('wordModal').classList.remove('open'); }
+
+// ── Save word ──────────────────────────────────────────
+async function saveWord() {
+  const korean = document.getElementById('fKorean').value.trim();
+  const rom    = document.getElementById('fRom').value.trim();
+  const zh     = document.getElementById('fChinese').value.trim();
+  if (!korean || !rom || !zh) { showToast('필수 항목을 입력하세요 (*)'); return; }
+
+  const payload = {
+    korean,
+    romanization: rom,
+    chinese:      zh,
+    category:     document.getElementById('fCategory').value,
+    level:        document.getElementById('fLevel').value,
+    example_kr:   document.getElementById('fExKr').value.trim(),
+    example_zh:   document.getElementById('fExZh').value.trim(),
+  };
+
+  const editId = document.getElementById('editId').value;
+  document.getElementById('saveBtn').disabled = true;
+
+  let error;
+  if (editId) {
+    ({ error } = await sb.from('words').update(payload).eq('id', editId));
+  } else {
+    const maxOrder = Math.max(0, ...allWords.filter(w => w.category === payload.category).map(w => w.sort_order || 0));
+    payload.sort_order = maxOrder + 1;
+    ({ error } = await sb.from('words').insert(payload));
+  }
+
+  document.getElementById('saveBtn').disabled = false;
+  if (error) { showToast('저장 실패: ' + error.message); return; }
+  showToast(editId ? '수정 완료! ✅' : '추가 완료! ✅');
+  closeModal();
+  await loadWords();
+}
+
+// ── Delete word ────────────────────────────────────────
+async function deleteWord(id, name) {
+  if (!confirm(`"${name}" 을(를) 삭제할까요? 학생 진행률도 함께 삭제됩니다.`)) return;
+  const { error } = await sb.from('words').delete().eq('id', id);
+  if (error) { showToast('삭제 실패: ' + error.message); return; }
+  showToast('삭제 완료 🗑️');
+  await loadWords();
+}
+
+// ── Bind events ────────────────────────────────────────
+function bindEvents() {
+  document.getElementById('searchInput').addEventListener('input', renderTable);
+  document.getElementById('catFilter').addEventListener('change', renderTable);
+  document.getElementById('levelFilter').addEventListener('change', renderTable);
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'login.html';
+  });
+  document.getElementById('wordModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showSpinner(v) { document.getElementById('spinnerOverlay').classList.toggle('open', v); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
