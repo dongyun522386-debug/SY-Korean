@@ -150,8 +150,8 @@
     height:var(--card-h);perspective:1000px;cursor:pointer;
     border-radius:var(--radius);
     transition:box-shadow .25s;
-    will-change:transform;
-    /* overflow:hidden 제거 — preserve-3d와 충돌해 카드 뒷면 렌더링 차단함 */
+    /* will-change:transform 제거 — preserve-3d를 flat으로 강제 처리해 카드 뒷면 안 보임 */
+    /* overflow:hidden 제거 — 동일한 이유 */
   }
   .card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);border-radius:var(--radius)}
   .card-wrap.flipped .card-inner{transform:rotateY(180deg)}
