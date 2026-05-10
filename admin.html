@@ -7,19 +7,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary:#0047A0; --primary-light:#1565C0; --primary-pale:#E3EDF8;
-    --accent:#CD2E3A;
-    --bg:#F4F8FF; --surface:#fff; --surface2:#F0F4FA;
-    --text:#1A2740; --text-muted:#5A6B8A;
-    --border:#D0DCF0; --shadow:rgba(0,71,160,.12);
-    --radius:14px;
-    --green:#2E7D32; --green-bg:#E8F5E9;
+    --primary:#6366F1; --primary-light:#818CF8; --primary-pale:#EEF2FF;
+    --accent:#F43F5E; --accent-light:#FB7185;
+    --gold:#F59E0B;
+    --bg:#FAFAFA; --surface:#fff; --surface2:#F1F5F9;
+    --text:#0F172A; --text-muted:#64748B;
+    --border:#E2E8F0; --shadow:rgba(99,102,241,.12);
+    --radius:20px;
+    --green:#10B981; --green-bg:#D1FAE5;
+    --cat-nouns:#6366F1;    --cat-nouns-2:#8B5CF6;
+    --cat-verbs:#10B981;    --cat-verbs-2:#0EA5E9;
+    --cat-adjectives:#8B5CF6; --cat-adjectives-2:#6366F1;
+    --cat-fixed:#F59E0B;    --cat-fixed-2:#F43F5E;
+    --cat-numbers:#F43F5E;  --cat-numbers-2:#F59E0B;
+    --cat-daily:#0EA5E9;    --cat-daily-2:#10B981;
   }
   *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
   body { font-family:'Noto Sans KR','Noto Sans SC',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
   header {
-    background:linear-gradient(135deg,var(--primary) 0%,#003080 100%);
+    background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
     color:#fff; padding:0 24px;
     position:sticky; top:0; z-index:100;
     box-shadow:0 2px 16px rgba(0,0,0,.25);
@@ -110,6 +117,12 @@
     display:inline-block; font-size:0.7rem; padding:2px 7px;
     border-radius:5px; background:var(--primary-pale); color:var(--primary); font-weight:500;
   }
+  .cat-badge[data-cat="nouns"]       { background:#EEF2FF; color:#6366F1; }
+  .cat-badge[data-cat="verbs"]       { background:#D1FAE5; color:#10B981; }
+  .cat-badge[data-cat="adjectives"]  { background:#EDE9FE; color:#8B5CF6; }
+  .cat-badge[data-cat="fixed"]       { background:#FEF3C7; color:#F59E0B; }
+  .cat-badge[data-cat="numbers"]     { background:#FFE4E6; color:#F43F5E; }
+  .cat-badge[data-cat="daily"]       { background:#E0F2FE; color:#0EA5E9; }
   .action-btns { display:flex; gap:6px; }
   .edit-btn, .del-btn {
     padding:5px 12px; border:none; border-radius:7px;
@@ -210,6 +223,8 @@
     <div class="stat-card"><div class="num" id="verbCount">-</div><div class="lbl">동사</div></div>
     <div class="stat-card"><div class="num" id="adjCount">-</div><div class="lbl">형용사</div></div>
     <div class="stat-card"><div class="num" id="fixedCount">-</div><div class="lbl">고정표현</div></div>
+    <div class="stat-card"><div class="num" id="numbersCount">-</div><div class="lbl">숫자/날짜</div></div>
+    <div class="stat-card"><div class="num" id="dailyCount">-</div><div class="lbl">일상생활</div></div>
   </div>
 
   <!-- Controls -->
@@ -226,6 +241,8 @@
       <option value="verbs">동사</option>
       <option value="adjectives">형용사</option>
       <option value="fixed">고정표현</option>
+      <option value="numbers">숫자/날짜</option>
+      <option value="daily">일상생활</option>
     </select>
     <select id="levelFilter">
       <option value="">전체 난이도</option>
@@ -284,6 +301,8 @@
             <option value="verbs">동사</option>
             <option value="adjectives">형용사</option>
             <option value="fixed">고정표현</option>
+            <option value="numbers">숫자/날짜</option>
+            <option value="daily">일상생활</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0">
@@ -324,7 +343,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 let allWords = [];
 let currentUser = null;
 
-const CAT_LABEL = { nouns:'명사', verbs:'동사', adjectives:'형용사', fixed:'고정표현' };
+const CAT_LABEL = { nouns:'명사', verbs:'동사', adjectives:'형용사', fixed:'고정표현', numbers:'숫자/날짜', daily:'일상생활' };
 
 // ── Auth check ─────────────────────────────────────────
 (async () => {
@@ -355,11 +374,13 @@ async function loadWords() {
 }
 
 function updateStats() {
-  document.getElementById('totalCount').textContent = allWords.length;
-  document.getElementById('nounCount').textContent  = allWords.filter(w => w.category === 'nouns').length;
-  document.getElementById('verbCount').textContent  = allWords.filter(w => w.category === 'verbs').length;
-  document.getElementById('adjCount').textContent   = allWords.filter(w => w.category === 'adjectives').length;
-  document.getElementById('fixedCount').textContent = allWords.filter(w => w.category === 'fixed').length;
+  document.getElementById('totalCount').textContent   = allWords.length;
+  document.getElementById('nounCount').textContent    = allWords.filter(w => w.category === 'nouns').length;
+  document.getElementById('verbCount').textContent    = allWords.filter(w => w.category === 'verbs').length;
+  document.getElementById('adjCount').textContent     = allWords.filter(w => w.category === 'adjectives').length;
+  document.getElementById('fixedCount').textContent   = allWords.filter(w => w.category === 'fixed').length;
+  document.getElementById('numbersCount').textContent = allWords.filter(w => w.category === 'numbers').length;
+  document.getElementById('dailyCount').textContent   = allWords.filter(w => w.category === 'daily').length;
 }
 
 // ── Render table ───────────────────────────────────────
@@ -387,7 +408,7 @@ function renderTable() {
         <div class="td-rom">[${esc(w.romanization)}]</div>
       </td>
       <td>${esc(w.chinese)}</td>
-      <td><span class="cat-badge">${CAT_LABEL[w.category] || w.category}</span></td>
+      <td><span class="cat-badge" data-cat="${esc(w.category)}">${CAT_LABEL[w.category] || w.category}</span></td>
       <td><span class="level-badge level-${esc(w.level)}">${esc(w.level)}</span></td>
       <td style="font-size:.8rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         ${esc(w.example_kr || '')}
