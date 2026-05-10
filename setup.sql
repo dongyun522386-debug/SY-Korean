@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS words (
   example_kr   TEXT DEFAULT '',
   example_zh   TEXT DEFAULT '',
   level        TEXT CHECK (level IN ('초급', '중급', '고급')) DEFAULT '초급',
-  category     TEXT CHECK (category IN ('nouns', 'verbs', 'adjectives', 'fixed')) NOT NULL,
+  category     TEXT CHECK (category IN ('nouns', 'verbs', 'adjectives', 'fixed', 'numbers', 'daily')) NOT NULL,
   sort_order   INT  DEFAULT 0,
   created_at   TIMESTAMPTZ DEFAULT NOW(),
   updated_at   TIMESTAMPTZ DEFAULT NOW()
@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS user_progress (
   word_id    UUID REFERENCES words(id)       ON DELETE CASCADE NOT NULL,
   learned    BOOLEAN DEFAULT FALSE,
   learned_at TIMESTAMPTZ,
+  bookmarked BOOLEAN DEFAULT FALSE,
   UNIQUE (user_id, word_id)
 );
 
@@ -71,7 +72,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
-    CASE WHEN NEW.email = 'YOUR_ADMIN_EMAIL@example.com' THEN 'admin' ELSE 'student' END
+    CASE WHEN NEW.email = 'dongyun522386@gmail.com' THEN 'admin' ELSE 'student' END
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
