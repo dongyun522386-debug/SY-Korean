@@ -145,18 +145,21 @@
   .filter-chip.chip-sort:hover{background:#10B981;color:#fff}
 
   /* ── CARD GRID ── */
-  #cardGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+  #cardGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;align-items:start}
   .card-wrap{
-    height:var(--card-h);perspective:1000px;cursor:pointer;
+    height:var(--card-h);cursor:pointer;
     border-radius:var(--radius);
     transition:box-shadow .25s;
-    /* will-change:transform 제거 — preserve-3d를 flat으로 강제 처리해 카드 뒷면 안 보임 */
-    /* overflow:hidden 제거 — 동일한 이유 */
+    scroll-margin-top:140px;
+    contain:layout paint;
   }
-  .card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);border-radius:var(--radius)}
-  .card-wrap.flipped .card-inner{transform:rotateY(180deg)}
-  .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--radius);overflow:hidden}
-  .card-front{background:var(--surface);border:none;box-shadow:0 2px 16px rgba(0,0,0,.07);display:flex;flex-direction:column;padding:18px 18px 18px 22px;justify-content:space-between;transition:box-shadow .25s;position:relative}
+  .card-inner{position:relative;width:100%;height:100%;border-radius:var(--radius);isolation:isolate}
+  .card-face{position:absolute;inset:0;width:100%;height:100%;border-radius:var(--radius);overflow:hidden;transition:opacity .18s ease,visibility .18s ease}
+  .card-front{opacity:1;visibility:visible;pointer-events:auto}
+  .card-back{opacity:0;visibility:hidden;pointer-events:none}
+  .card-wrap.flipped .card-front{opacity:0;visibility:hidden;pointer-events:none}
+  .card-wrap.flipped .card-back{opacity:1;visibility:visible;pointer-events:auto}
+  .card-front{background:var(--surface);border:none;box-shadow:0 2px 16px rgba(0,0,0,.07);display:flex;flex-direction:column;padding:18px 18px 18px 22px;justify-content:space-between;transition:box-shadow .25s,opacity .18s ease,visibility .18s ease;position:relative}
   .card-front::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:20px 0 0 20px}
   [data-cat="nouns"] .card-front::before{background:var(--cat-nouns)}
   [data-cat="verbs"] .card-front::before{background:var(--cat-verbs)}
@@ -178,7 +181,7 @@
   [data-cat="fixed"] .card-back{background:linear-gradient(145deg,var(--cat-fixed),var(--cat-fixed-2))}
   [data-cat="numbers"] .card-back{background:linear-gradient(145deg,var(--cat-numbers),var(--cat-numbers-2))}
   [data-cat="daily"] .card-back{background:linear-gradient(145deg,var(--cat-daily),var(--cat-daily-2))}
-  .card-back{background:linear-gradient(145deg,var(--primary),var(--primary-light));color:#fff;transform:rotateY(180deg);display:flex;flex-direction:column;padding:18px;justify-content:space-between;box-shadow:0 4px 18px var(--shadow)}
+  .card-back{background:linear-gradient(145deg,var(--primary),var(--primary-light));color:#fff;display:flex;flex-direction:column;padding:18px;justify-content:space-between;box-shadow:0 4px 18px var(--shadow)}
   .card-top{display:flex;justify-content:space-between;align-items:flex-start}
   .level-badge{font-size:.68rem;font-weight:600;padding:2px 7px;border-radius:5px}
   .level-초급{background:#DCFCE7;color:#16A34A}
@@ -370,7 +373,7 @@
     .mobile-tabs{display:block}
     .tabs-desktop{display:none}
     #cardGrid{grid-template-columns:1fr}
-    .card-wrap{height:200px}
+    .card-wrap{height:200px;scroll-margin-top:170px}
     .quiz-options{grid-template-columns:1fr}
     .header-right .user-pill,.header-right .progress-pill{display:none}
   }
@@ -867,7 +870,15 @@ function esc(s) {
 // ── INTERACTIONS ────────────────────────────────────────
 function handleCardClick(e, cardEl) {
   if (e.target.closest('button')) return;
+  e.preventDefault();
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
   cardEl.classList.toggle('flipped');
+  requestAnimationFrame(() => {
+    if (Math.abs(window.scrollY - scrollY) > 1 || Math.abs(window.scrollX - scrollX) > 1) {
+      window.scrollTo(scrollX, scrollY);
+    }
+  });
 }
 
 function speakWord(e, word) {
