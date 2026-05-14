@@ -219,12 +219,11 @@
   <!-- Stats -->
   <div class="stats">
     <div class="stat-card"><div class="num" id="totalCount">-</div><div class="lbl">전체 단어</div></div>
-    <div class="stat-card"><div class="num" id="nounCount">-</div><div class="lbl">명사</div></div>
-    <div class="stat-card"><div class="num" id="verbCount">-</div><div class="lbl">동사</div></div>
-    <div class="stat-card"><div class="num" id="adjCount">-</div><div class="lbl">형용사</div></div>
-    <div class="stat-card"><div class="num" id="fixedCount">-</div><div class="lbl">고정표현</div></div>
-    <div class="stat-card"><div class="num" id="numbersCount">-</div><div class="lbl">숫자/날짜</div></div>
-    <div class="stat-card"><div class="num" id="dailyCount">-</div><div class="lbl">일상생활</div></div>
+    <div class="stat-card"><div class="num" id="book1Count">-</div><div class="lbl">감자도리 1권</div></div>
+    <div class="stat-card"><div class="num" id="book2Count">-</div><div class="lbl">감자도리 2권</div></div>
+    <div class="stat-card"><div class="num" id="book3Count">-</div><div class="lbl">감자도리 3권</div></div>
+    <div class="stat-card"><div class="num" id="book4Count">-</div><div class="lbl">감자도리 4권</div></div>
+    <div class="stat-card"><div class="num" id="book5Count">-</div><div class="lbl">감자도리 5권</div></div>
   </div>
 
   <!-- Controls -->
@@ -235,14 +234,21 @@
       </svg>
       <input id="searchInput" type="text" placeholder="단어 검색...">
     </div>
-    <select id="catFilter">
-      <option value="">전체 카테고리</option>
-      <option value="nouns">명사</option>
-      <option value="verbs">동사</option>
-      <option value="adjectives">형용사</option>
-      <option value="fixed">고정표현</option>
-      <option value="numbers">숫자/날짜</option>
-      <option value="daily">일상생활</option>
+    <select id="bookFilter">
+      <option value="">전체 권수</option>
+      <option value="book1">감자도리 1권</option>
+      <option value="book2">감자도리 2권</option>
+      <option value="book3">감자도리 3권</option>
+      <option value="book4">감자도리 4권</option>
+      <option value="book5">감자도리 5권</option>
+    </select>
+    <select id="typeFilter">
+      <option value="">전체 유형</option>
+      <option value="vocab">단어</option>
+      <option value="pronunciation">발음</option>
+      <option value="dialogue">대화</option>
+      <option value="reading">읽기</option>
+      <option value="listening">듣기</option>
     </select>
     <select id="levelFilter">
       <option value="">전체 난이도</option>
@@ -260,14 +266,15 @@
         <tr>
           <th>한국어</th>
           <th>중국어</th>
-          <th>카테고리</th>
+          <th>권수</th>
+          <th>유형</th>
           <th>난이도</th>
           <th>예문</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="wordTableBody">
-        <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">로딩 중...</td></tr>
+        <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">로딩 중...</td></tr>
       </tbody>
     </table>
   </div>
@@ -295,24 +302,46 @@
       </div>
       <div class="form-row" style="grid-template-columns:1fr 1fr; gap:10px;">
         <div class="form-group" style="margin-bottom:0">
-          <label>카테고리 *</label>
-          <select id="fCategory">
-            <option value="nouns">명사</option>
-            <option value="verbs">동사</option>
-            <option value="adjectives">형용사</option>
-            <option value="fixed">고정표현</option>
-            <option value="numbers">숫자/날짜</option>
-            <option value="daily">일상생활</option>
+          <label>권수 *</label>
+          <select id="fBook">
+            <option value="book1">감자도리 1권</option>
+            <option value="book2">감자도리 2권</option>
+            <option value="book3">감자도리 3권</option>
+            <option value="book4">감자도리 4권</option>
+            <option value="book5">감자도리 5권</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0">
-          <label>난이도 *</label>
-          <select id="fLevel">
-            <option value="초급">초급</option>
-            <option value="중급">중급</option>
-            <option value="고급">고급</option>
+          <label>학습 유형 *</label>
+          <select id="fContentType">
+            <option value="vocab">단어</option>
+            <option value="pronunciation">발음</option>
+            <option value="dialogue">대화</option>
+            <option value="reading">읽기</option>
+            <option value="listening">듣기</option>
           </select>
         </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>난이도 *</label>
+        <select id="fLevel">
+          <option value="초급">초급</option>
+          <option value="중급">중급</option>
+          <option value="고급">고급</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>보조 분류</label>
+        <select id="fCategory">
+          <option value="nouns">명사</option>
+          <option value="verbs">동사</option>
+          <option value="adjectives">형용사</option>
+          <option value="fixed">고정표현</option>
+          <option value="numbers">숫자/날짜</option>
+          <option value="daily">일상생활</option>
+        </select>
       </div>
     </div>
     <div class="form-group">
@@ -344,6 +373,10 @@ let allWords = [];
 let currentUser = null;
 
 const CAT_LABEL = { nouns:'명사', verbs:'동사', adjectives:'형용사', fixed:'고정표현', numbers:'숫자/날짜', daily:'일상생활' };
+const BOOKS = ['book1','book2','book3','book4','book5'];
+const CONTENT_TYPES = ['vocab','pronunciation','dialogue','reading','listening'];
+const BOOK_LABEL = { book1:'감자도리 1권', book2:'감자도리 2권', book3:'감자도리 3권', book4:'감자도리 4권', book5:'감자도리 5권' };
+const CONTENT_LABEL = { vocab:'단어', pronunciation:'발음', dialogue:'대화', reading:'읽기', listening:'듣기' };
 
 // ── Auth check ─────────────────────────────────────────
 (async () => {
@@ -365,40 +398,50 @@ const CAT_LABEL = { nouns:'명사', verbs:'동사', adjectives:'형용사', fixe
 // ── Load words ─────────────────────────────────────────
 async function loadWords() {
   showSpinner(true);
-  const { data, error } = await sb.from('words').select('*').order('category').order('sort_order');
+  const { data, error } = await sb.from('words').select('*').order('book').order('content_type').order('sort_order');
   showSpinner(false);
   if (error) { showToast('단어 불러오기 실패: ' + error.message); return; }
-  allWords = data || [];
+  allWords = (data || []).map(normalizeWord);
   updateStats();
   renderTable();
 }
 
+function normalizeWord(word) {
+  const book = BOOKS.includes(word.book) ? word.book : 'book1';
+  const contentType = CONTENT_TYPES.includes(word.content_type) ? word.content_type : 'vocab';
+  return {
+    ...word,
+    book,
+    content_type: contentType,
+    category: CAT_LABEL[word.category] ? word.category : 'nouns'
+  };
+}
+
 function updateStats() {
   document.getElementById('totalCount').textContent   = allWords.length;
-  document.getElementById('nounCount').textContent    = allWords.filter(w => w.category === 'nouns').length;
-  document.getElementById('verbCount').textContent    = allWords.filter(w => w.category === 'verbs').length;
-  document.getElementById('adjCount').textContent     = allWords.filter(w => w.category === 'adjectives').length;
-  document.getElementById('fixedCount').textContent   = allWords.filter(w => w.category === 'fixed').length;
-  document.getElementById('numbersCount').textContent = allWords.filter(w => w.category === 'numbers').length;
-  document.getElementById('dailyCount').textContent   = allWords.filter(w => w.category === 'daily').length;
+  BOOKS.forEach(book => {
+    document.getElementById(book + 'Count').textContent = allWords.filter(w => w.book === book).length;
+  });
 }
 
 // ── Render table ───────────────────────────────────────
 function renderTable() {
   const q    = document.getElementById('searchInput').value.toLowerCase();
-  const cat  = document.getElementById('catFilter').value;
+  const book = document.getElementById('bookFilter').value;
+  const type = document.getElementById('typeFilter').value;
   const lvl  = document.getElementById('levelFilter').value;
 
   let list = allWords.filter(w => {
     const matchSearch = !q || w.korean.toLowerCase().includes(q) || w.chinese.includes(q);
-    const matchCat    = !cat || w.category === cat;
+    const matchBook   = !book || w.book === book;
+    const matchType   = !type || w.content_type === type;
     const matchLvl    = !lvl || w.level === lvl;
-    return matchSearch && matchCat && matchLvl;
+    return matchSearch && matchBook && matchType && matchLvl;
   });
 
   const tbody = document.getElementById('wordTableBody');
   if (!list.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">🔍 검색 결과가 없어요.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">🔍 검색 결과가 없어요.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(w => `
@@ -408,7 +451,8 @@ function renderTable() {
         <div class="td-rom">[${esc(w.romanization)}]</div>
       </td>
       <td>${esc(w.chinese)}</td>
-      <td><span class="cat-badge" data-cat="${esc(w.category)}">${CAT_LABEL[w.category] || w.category}</span></td>
+      <td>${esc(BOOK_LABEL[w.book] || w.book)}</td>
+      <td><span class="cat-badge" data-cat="${esc(w.category)}">${esc(CONTENT_LABEL[w.content_type] || w.content_type)}</span></td>
       <td><span class="level-badge level-${esc(w.level)}">${esc(w.level)}</span></td>
       <td style="font-size:.8rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         ${esc(w.example_kr || '')}
@@ -434,6 +478,8 @@ function openModal(wordId) {
     document.getElementById('fKorean').value    = w.korean;
     document.getElementById('fRom').value       = w.romanization;
     document.getElementById('fChinese').value   = w.chinese;
+    document.getElementById('fBook').value      = w.book || 'book1';
+    document.getElementById('fContentType').value = w.content_type || 'vocab';
     document.getElementById('fCategory').value  = w.category;
     document.getElementById('fLevel').value     = w.level;
     document.getElementById('fExKr').value      = w.example_kr || '';
@@ -442,6 +488,8 @@ function openModal(wordId) {
     document.getElementById('modalTitle').textContent = '새 단어 추가';
     document.getElementById('editId').value = '';
     ['fKorean','fRom','fChinese','fExKr','fExZh'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fBook').value = 'book1';
+    document.getElementById('fContentType').value = 'vocab';
     document.getElementById('fCategory').value = 'nouns';
     document.getElementById('fLevel').value    = '초급';
   }
@@ -459,6 +507,8 @@ async function saveWord() {
     korean,
     romanization: rom,
     chinese:      zh,
+    book:         document.getElementById('fBook').value,
+    content_type: document.getElementById('fContentType').value,
     category:     document.getElementById('fCategory').value,
     level:        document.getElementById('fLevel').value,
     example_kr:   document.getElementById('fExKr').value.trim(),
@@ -472,7 +522,9 @@ async function saveWord() {
   if (editId) {
     ({ error } = await sb.from('words').update(payload).eq('id', editId));
   } else {
-    const maxOrder = Math.max(0, ...allWords.filter(w => w.category === payload.category).map(w => w.sort_order || 0));
+    const maxOrder = Math.max(0, ...allWords
+      .filter(w => w.book === payload.book && w.content_type === payload.content_type)
+      .map(w => w.sort_order || 0));
     payload.sort_order = maxOrder + 1;
     ({ error } = await sb.from('words').insert(payload));
   }
@@ -496,7 +548,8 @@ async function deleteWord(id, name) {
 // ── Bind events ────────────────────────────────────────
 function bindEvents() {
   document.getElementById('searchInput').addEventListener('input', renderTable);
-  document.getElementById('catFilter').addEventListener('change', renderTable);
+  document.getElementById('bookFilter').addEventListener('change', renderTable);
+  document.getElementById('typeFilter').addEventListener('change', renderTable);
   document.getElementById('levelFilter').addEventListener('change', renderTable);
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();

@@ -107,6 +107,11 @@
   .tab-btn.active .tab-progress-fill{background:#fff}
   .tab-btn:hover:not(.active){background:rgba(255,255,255,.62);color:var(--primary)}
 
+  .content-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:5px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 24px rgba(15,23,42,.035)}
+  .content-tab-btn{flex:1;min-width:92px;border:0;background:transparent;border-radius:13px;padding:10px 12px;font-family:inherit;font-size:.78rem;font-weight:800;color:var(--text-muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+  .content-tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 10px 22px rgba(49,130,246,.16)}
+  .content-tab-btn:hover:not(.active){background:#EEF6FF;color:var(--primary)}
+
   /* ── CONTROLS ── */
   /* ── CONTROLS: 두 행으로 분리 ── */
   .controls{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
@@ -333,6 +338,8 @@
   .mobile-tab-btn[data-tab="numbers"].active .mt-bar{background:var(--cat-numbers)}
   .mobile-tab-btn[data-tab="daily"].active{color:var(--cat-daily)}
   .mobile-tab-btn[data-tab="daily"].active .mt-bar{background:var(--cat-daily)}
+  .mobile-tab-btn.active{color:var(--primary)}
+  .mobile-tab-btn.active .mt-bar{background:var(--primary)}
   .mt-bar{width:24px;height:2px;background:transparent;border-radius:2px;transition:background .2s}
 
   .tips-header span{display:inline-block;transition:transform .3s}
@@ -484,12 +491,19 @@
   <section class="learning-panel" aria-label="학습 대시보드">
     <!-- DESKTOP TABS -->
     <div class="tabs-desktop" role="tablist">
-    <button class="tab-btn active" data-tab="nouns"      role="tab">명사 <span class="tab-count" id="cnt-nouns">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-nouns" style="width:0%"></div></div></button>
-    <button class="tab-btn"        data-tab="verbs"      role="tab">동사 <span class="tab-count" id="cnt-verbs">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-verbs" style="width:0%"></div></div></button>
-    <button class="tab-btn"        data-tab="adjectives" role="tab">형용사 <span class="tab-count" id="cnt-adjectives">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-adjectives" style="width:0%"></div></div></button>
-    <button class="tab-btn"        data-tab="fixed"      role="tab">고정표현 <span class="tab-count" id="cnt-fixed">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-fixed" style="width:0%"></div></div></button>
-    <button class="tab-btn"        data-tab="numbers"    role="tab">숫자/날짜 <span class="tab-count" id="cnt-numbers">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-numbers" style="width:0%"></div></div></button>
-    <button class="tab-btn"        data-tab="daily"      role="tab">일상생활 <span class="tab-count" id="cnt-daily">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-daily" style="width:0%"></div></div></button>
+    <button class="tab-btn active" data-tab="book1" role="tab">감자도리 1권 <span class="tab-count" id="cnt-book1">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book1" style="width:0%"></div></div></button>
+    <button class="tab-btn" data-tab="book2" role="tab">감자도리 2권 <span class="tab-count" id="cnt-book2">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book2" style="width:0%"></div></div></button>
+    <button class="tab-btn" data-tab="book3" role="tab">감자도리 3권 <span class="tab-count" id="cnt-book3">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book3" style="width:0%"></div></div></button>
+    <button class="tab-btn" data-tab="book4" role="tab">감자도리 4권 <span class="tab-count" id="cnt-book4">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book4" style="width:0%"></div></div></button>
+    <button class="tab-btn" data-tab="book5" role="tab">감자도리 5권 <span class="tab-count" id="cnt-book5">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book5" style="width:0%"></div></div></button>
+    </div>
+
+    <div class="content-tabs" role="tablist" aria-label="세부 학습 유형">
+      <button class="content-tab-btn active" data-type="vocab" role="tab">단어</button>
+      <button class="content-tab-btn" data-type="pronunciation" role="tab">발음</button>
+      <button class="content-tab-btn" data-type="dialogue" role="tab">대화</button>
+      <button class="content-tab-btn" data-type="reading" role="tab">읽기</button>
+      <button class="content-tab-btn" data-type="listening" role="tab">듣기</button>
     </div>
 
     <!-- CONTROLS -->
@@ -556,12 +570,11 @@
 <!-- MOBILE BOTTOM TAB BAR -->
 <nav class="mobile-tabs">
   <div class="mobile-tabs-inner">
-    <button class="mobile-tab-btn active" data-tab="nouns"><span class="mt-icon">📚</span>명사<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="verbs"><span class="mt-icon">🏃</span>동사<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="adjectives"><span class="mt-icon">🎨</span>형용사<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="fixed"><span class="mt-icon">💬</span>고정표현<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="numbers"><span class="mt-icon">🔢</span>숫자<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="daily"><span class="mt-icon">☀️</span>일상<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn active" data-tab="book1"><span class="mt-icon">1</span>1권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book2"><span class="mt-icon">2</span>2권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book3"><span class="mt-icon">3</span>3권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book4"><span class="mt-icon">4</span>4권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book5"><span class="mt-icon">5</span>5권<div class="mt-bar"></div></button>
   </div>
 </nav>
 
@@ -736,13 +749,18 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── STATE ──────────────────────────────────────────────
-const TABS = ['nouns','verbs','adjectives','fixed','numbers','daily'];
+const TABS = ['book1','book2','book3','book4','book5'];
+const LEGACY_CATEGORIES = ['nouns','verbs','adjectives','fixed','numbers','daily'];
+const CONTENT_TYPES = ['vocab','pronunciation','dialogue','reading','listening'];
+const BOOK_LABEL = {book1:'감자도리 1권',book2:'감자도리 2권',book3:'감자도리 3권',book4:'감자도리 4권',book5:'감자도리 5권'};
+const CONTENT_LABEL = {vocab:'단어',pronunciation:'발음',dialogue:'대화',reading:'읽기',listening:'듣기'};
 let vocabulary   = Object.fromEntries(TABS.map(t => [t, []]));
 let learnedWords = new Set();
 let bookmarks    = new Set();
 let currentUser  = null;
 let isAdmin      = false;
-let currentTab   = 'nouns';
+let currentTab   = 'book1';
+let currentContentType = 'vocab';
 let currentLevel = '전체';
 let sortAlpha    = false;
 let searchQuery  = '';
@@ -769,7 +787,10 @@ async function init() {
 
   const { data: words, error: wErr } = await sb.from('words').select('*').order('category').order('sort_order');
   if (wErr) { showLoadError(wErr.message); return; }
-  (words || []).forEach(w => { if (vocabulary[w.category]) vocabulary[w.category].push(w); });
+  (words || []).forEach(w => {
+    const normalized = normalizeLearningItem(w);
+    if (vocabulary[normalized.book]) vocabulary[normalized.book].push(normalized);
+  });
 
   const { data: progress } = await sb.from('user_progress').select('word_id,learned,bookmarked').eq('user_id', user.id);
   learnedWords = new Set((progress||[]).filter(p => p.learned).map(p => p.word_id));
@@ -791,6 +812,19 @@ function showLoadError(msg) {
 function applyDarkMode() {
   document.body.classList.toggle('dark', darkMode);
   document.getElementById('darkToggle').textContent = darkMode ? '☀️' : '🌙';
+}
+
+function normalizeLearningItem(word) {
+  const rawBook = word.book || word.book_id || word.volume || word.volume_id;
+  const book = TABS.includes(rawBook) ? rawBook : 'book1';
+  const rawType = word.content_type || word.contentType || word.type;
+  const contentType = CONTENT_TYPES.includes(rawType) ? rawType : 'vocab';
+  return {
+    ...word,
+    book,
+    content_type: contentType,
+    category: LEGACY_CATEGORIES.includes(word.category) ? word.category : 'nouns'
+  };
 }
 
 function updateTabCounts() {
@@ -817,7 +851,7 @@ function updateProgress() {
 
 // ── RENDER ─────────────────────────────────────────────
 function getFilteredWords() {
-  let words = [...(vocabulary[currentTab] || [])];
+  let words = [...(vocabulary[currentTab] || [])].filter(w => (w.content_type || 'vocab') === currentContentType);
   if (showBookmarksOnly) words = words.filter(w => bookmarks.has(w.id));
   if (currentLevel !== '전체') words = words.filter(w => w.level === currentLevel);
   if (searchQuery) {
@@ -861,17 +895,18 @@ function renderCards() {
   document.querySelectorAll('.card-wrap.flipped').forEach(c => c.classList.remove('flipped'));
   const grid  = document.getElementById('cardGrid');
   const words = getFilteredWords();
-  const total = (vocabulary[currentTab] || []).length;
+  const total = (vocabulary[currentTab] || []).filter(w => (w.content_type || 'vocab') === currentContentType).length;
   renderResultBar(total, words.length);
   if (!words.length) {
     let icon, title, sub, action = '';
     const allInTab = total;
 
     if (allInTab === 0) {
-      // 카테고리 자체에 단어 없음
-      icon  = '📝';
-      title = '아직 단어가 없어요';
-      sub   = '이 카테고리에 아직 단어가 추가되지 않았어요.<br>관리자 패널에서 추가해보세요!';
+      icon  = currentContentType === 'vocab' ? '📝' : '📂';
+      title = `${BOOK_LABEL[currentTab]} ${CONTENT_LABEL[currentContentType]} 자료가 없어요`;
+      sub   = currentContentType === 'vocab'
+        ? '이 권의 단어 자료가 아직 연결되지 않았어요.<br>관리자 패널에서 추가해보세요!'
+        : '감자도리 원본 HTML에서 이 영역의 자료를 다음 단계에 분할 반영할 예정이에요.';
     } else if (showBookmarksOnly) {
       // 북마크 없음
       icon  = '⭐';
@@ -1004,12 +1039,10 @@ function openFlashcard() {
   flashWords = getFilteredWords();
   if (!flashWords.length) { showToast('해당 조건에 맞는 단어가 없어요 🔍'); return; }
   flashIdx = 0; flashFlipped = false;
-  const CAT_LABEL = {nouns:'명사',verbs:'동사',adjectives:'형용사',fixed:'고정표현',numbers:'숫자/날짜',daily:'일상생활'};
-  const CAT_COLORS = {nouns:['#2563EB','#60A5FA'],verbs:['#0F9F6E','#34D399'],adjectives:['#7C3AED','#A78BFA'],fixed:['#D97706','#FBBF24'],numbers:['#E11D48','#FB7185'],daily:['#0284C7','#38BDF8']};
-  const cc = CAT_COLORS[currentTab]||['#2563EB','#60A5FA'];
+  const cc = ['#3182F6','#69A7FF'];
   const flashBackEl = document.querySelector('.flash-back');
   if(flashBackEl) flashBackEl.style.background = `linear-gradient(145deg,${cc[0]},${cc[1]})`;
-  document.getElementById('flashCategory').textContent = CAT_LABEL[currentTab] || currentTab;
+  document.getElementById('flashCategory').textContent = `${BOOK_LABEL[currentTab]} · ${CONTENT_LABEL[currentContentType]}`;
   document.getElementById('flashOverlay').classList.add('open');
   renderFlashCard();
 }
@@ -1102,6 +1135,12 @@ function switchTab(tab) {
   renderCards();
 }
 
+function switchContentType(type) {
+  currentContentType = type;
+  document.querySelectorAll('.content-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  renderCards();
+}
+
 // ── EVENTS ──────────────────────────────────────────────
 function bindEvents() {
   // Desktop tabs
@@ -1111,6 +1150,9 @@ function bindEvents() {
   // Mobile tabs
   document.querySelectorAll('.mobile-tab-btn').forEach(btn =>
     btn.addEventListener('click', () => switchTab(btn.dataset.tab))
+  );
+  document.querySelectorAll('.content-tab-btn').forEach(btn =>
+    btn.addEventListener('click', () => switchContentType(btn.dataset.type))
   );
   // Filters
   document.querySelectorAll('.filter-btn:not(.bookmark-filter)').forEach(btn =>

@@ -23,10 +23,20 @@ CREATE TABLE IF NOT EXISTS words (
   example_zh   TEXT DEFAULT '',
   level        TEXT CHECK (level IN ('초급', '중급', '고급')) DEFAULT '초급',
   category     TEXT CHECK (category IN ('nouns', 'verbs', 'adjectives', 'fixed', 'numbers', 'daily')) NOT NULL,
+  book         TEXT NOT NULL DEFAULT 'book1' CHECK (book IN ('book1', 'book2', 'book3', 'book4', 'book5')),
+  content_type TEXT NOT NULL DEFAULT 'vocab' CHECK (content_type IN ('vocab', 'pronunciation', 'dialogue', 'reading', 'listening')),
   sort_order   INT  DEFAULT 0,
   created_at   TIMESTAMPTZ DEFAULT NOW(),
   updated_at   TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE words
+  ADD COLUMN IF NOT EXISTS book TEXT NOT NULL DEFAULT 'book1'
+    CHECK (book IN ('book1', 'book2', 'book3', 'book4', 'book5'));
+
+ALTER TABLE words
+  ADD COLUMN IF NOT EXISTS content_type TEXT NOT NULL DEFAULT 'vocab'
+    CHECK (content_type IN ('vocab', 'pronunciation', 'dialogue', 'reading', 'listening'));
 
 CREATE TABLE IF NOT EXISTS user_progress (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
