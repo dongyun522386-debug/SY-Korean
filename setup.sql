@@ -56,9 +56,25 @@ ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
 
 -- ── 3. RLS 정책 ──────────────────────────────────────────────
 
--- profiles: 본인 프로필만 읽기/수정
+-- profiles: 본인 프로필만 읽기/수정 (role 변경은 아래 트리거로 차단)
 CREATE POLICY "own profile select" ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "own profile update" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- 일반 사용자가 본인 role을 student -> admin으로 바꾸는 것을 방지
+CREATE OR REPLACE FUNCTION prevent_profile_role_self_update()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  IF NEW.role IS DISTINCT FROM OLD.role AND auth.uid() = OLD.id THEN
+    RAISE EXCEPTION 'profile role cannot be changed by the client';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_prevent_role_self_update ON profiles;
+CREATE TRIGGER profiles_prevent_role_self_update
+  BEFORE UPDATE OF role ON profiles
+  FOR EACH ROW EXECUTE FUNCTION prevent_profile_role_self_update();
 
 -- words: 로그인한 사용자 모두 읽기 / 관리자만 쓰기
 CREATE POLICY "words read"   ON words FOR SELECT TO authenticated USING (true);
