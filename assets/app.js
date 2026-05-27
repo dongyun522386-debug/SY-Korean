@@ -6,7 +6,7 @@ const TABS = ['book1','book2','book3','book4','book5'];
 const LEGACY_CATEGORIES = ['nouns','verbs','adjectives','fixed','numbers','daily'];
 const CONTENT_TYPES = ['vocab','pronunciation','dialogue','reading','listening'];
 const BOOK_LABEL = {book1:'감자도리 1권',book2:'감자도리 2권',book3:'감자도리 3권',book4:'감자도리 4권',book5:'감자도리 5권'};
-const CONTENT_LABEL = {vocab:'단어',pronunciation:'발음',dialogue:'대화',reading:'읽기',listening:'듣기'};
+const CONTENT_LABEL = {vocab:'단어 뜻',pronunciation:'발음 연습',dialogue:'예문 대화',reading:'읽기 연습',listening:'듣기 연습'};
 let vocabulary   = Object.fromEntries(TABS.map(t => [t, []]));
 let learnedWords = new Set();
 let bookmarks    = new Set();
@@ -18,6 +18,7 @@ let currentLevel = '전체';
 let sortAlpha    = false;
 let searchQuery  = '';
 let showBookmarksOnly = false;
+let showAllBooks = false;
 let darkMode     = localStorage.getItem('dark_mode') === 'true';
 // Quiz
 let quizScore = 0, quizTotal = 0, quizAnswered = false;
@@ -56,9 +57,11 @@ async function init() {
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('mainContent').style.display  = '';
   updateTabCounts();
+  updateBookVisibility();
   renderCards();
   bindEvents();
   updateProgress();
+  updateDashboardSummary();
 }
 
 function showLoadError(msg) {
@@ -68,7 +71,10 @@ function showLoadError(msg) {
 
 function applyDarkMode() {
   document.body.classList.toggle('dark', darkMode);
-  document.getElementById('darkToggle').textContent = darkMode ? '☀️' : '🌙';
+  const darkToggle = document.getElementById('darkToggle');
+  darkToggle.textContent = darkMode ? '☀️' : '🌙';
+  darkToggle.setAttribute('aria-label', darkMode ? '라이트 모드 전환' : '다크 모드 전환');
+  darkToggle.setAttribute('title', darkMode ? '라이트 모드 전환' : '다크 모드 전환');
 }
 
 function normalizeLearningItem(word) {
@@ -125,6 +131,8 @@ function updateTabCounts() {
     if (el) el.textContent = words.length;
     updateTabProgress(tab);
   });
+  updateBookVisibility();
+  updateDashboardSummary();
 }
 
 function updateTabProgress(tab) {
@@ -138,6 +146,82 @@ function updateProgress() {
   document.getElementById('learnedCount').textContent  = learnedWords.size;
   document.getElementById('bookmarkCount').textContent = bookmarks.size;
   TABS.forEach(updateTabProgress);
+  updateDashboardSummary();
+}
+
+function getBookTotal(tab = currentTab) {
+  return (vocabulary[tab] || []).length;
+}
+
+function getTypeTotal(tab = currentTab, type = currentContentType) {
+  return (vocabulary[tab] || []).filter(w => (w.content_type || 'vocab') === type).length;
+}
+
+function getTodayTargetCount() {
+  const words = (vocabulary[currentTab] || [])
+    .filter(w => (w.content_type || 'vocab') === currentContentType && !learnedWords.has(w.id));
+  return Math.min(words.length, 10);
+}
+
+function updateDashboardSummary() {
+  const bookTotal = getBookTotal();
+  const todayCount = getTodayTargetCount();
+  const bookName = BOOK_LABEL[currentTab] || '감자도리 1권';
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  setText('dashboardBookName', bookName);
+  setText('todayPlanCount', todayCount);
+  setText('dashboardTotalCount', bookTotal);
+  setText('dashboardBookmarkCount', bookmarks.size);
+  setText('todayLearnedMeter', learnedWords.size);
+}
+
+function updateBookVisibility() {
+  const revealBtn = document.getElementById('showEmptyBooksBtn');
+  let hiddenCount = 0;
+  TABS.forEach(tab => {
+    const shouldHide = !showAllBooks && getBookTotal(tab) === 0 && tab !== currentTab && !isAdmin;
+    if (shouldHide) hiddenCount++;
+    document.querySelectorAll(`[data-tab="${tab}"]`).forEach(btn => {
+      btn.classList.toggle('is-hidden', shouldHide);
+      btn.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
+    });
+  });
+  if (revealBtn) {
+    revealBtn.style.display = hiddenCount || showAllBooks ? '' : 'none';
+    revealBtn.textContent = showAllBooks ? '빈 단어장 숨기기' : '다른 단어장 보기';
+    revealBtn.classList.toggle('active', showAllBooks);
+    revealBtn.setAttribute('aria-expanded', String(showAllBooks));
+  }
+}
+
+function setLevelFilter(level) {
+  currentLevel = level;
+  document.querySelectorAll('.filter-btn:not(.bookmark-filter)').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.level === level);
+  });
+}
+
+function resetFilters() {
+  searchQuery = '';
+  showBookmarksOnly = false;
+  sortAlpha = false;
+  setLevelFilter('전체');
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  document.getElementById('bookmarkFilter')?.classList.remove('active');
+  document.getElementById('sortBtn')?.classList.remove('active');
+}
+
+function showAllWords() {
+  resetFilters();
+  if (getTypeTotal(currentTab, currentContentType) === 0 && getTypeTotal(currentTab, 'vocab') > 0) {
+    switchContentType('vocab');
+    return;
+  }
+  renderCards();
 }
 
 // ── RENDER ─────────────────────────────────────────────
@@ -153,23 +237,23 @@ function getFilteredWords() {
   return words;
 }
 
-function renderResultBar(total, filtered) {
+function renderResultBar({ bookTotal, typeTotal, filteredCount }) {
   const bar = document.getElementById('resultBar');
   if (!bar) return;
 
-  // 카운트 텍스트
-  const isFiltered = filtered < total;
-  const countHtml = isFiltered
-    ? `<span class="result-count">전체 <strong>${total}</strong>개 중 <strong>${filtered}</strong>개</span>`
-    : `<span class="result-count">단어 <strong>${total}</strong>개</span>`;
+  const hasActiveCondition = searchQuery || showBookmarksOnly || currentLevel !== '전체' || sortAlpha || typeTotal !== bookTotal;
+  const countHtml = hasActiveCondition
+    ? `<span class="result-count">전체 <strong>${bookTotal}</strong>개 중 현재 조건 <strong>${filteredCount}</strong>개</span>`
+    : `<span class="result-count">전체 단어 <strong>${bookTotal}</strong>개</span>`;
+  const contextHtml = `<span class="result-context">${BOOK_LABEL[currentTab]} · ${CONTENT_LABEL[currentContentType]} ${typeTotal}개</span>`;
 
   // 활성 필터 칩 생성
   const chips = [];
   if (searchQuery) {
-    chips.push(`<span class="filter-chip" onclick="document.getElementById('searchInput').value='';searchQuery='';renderCards()">🔍 "${searchQuery}" <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip" onclick="document.getElementById('searchInput').value='';searchQuery='';renderCards()">🔍 "${esc(searchQuery)}" <span class="chip-x">✕</span></span>`);
   }
   if (currentLevel !== '전체') {
-    chips.push(`<span class="filter-chip" onclick="currentLevel='전체';document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.filter-btn').classList.add('active');renderCards()">${currentLevel} <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip" onclick="setLevelFilter('전체');renderCards()">${currentLevel} <span class="chip-x">✕</span></span>`);
   }
   if (showBookmarksOnly) {
     chips.push(`<span class="filter-chip chip-bookmark" onclick="document.getElementById('bookmarkFilter').click()">⭐ 즐겨찾기 <span class="chip-x">✕</span></span>`);
@@ -178,7 +262,7 @@ function renderResultBar(total, filtered) {
     chips.push(`<span class="filter-chip chip-sort" onclick="document.getElementById('sortBtn').click()">가나다순 ↕ <span class="chip-x">✕</span></span>`);
   }
 
-  bar.innerHTML = countHtml + (chips.length ? `<div class="active-filters">${chips.join('')}</div>` : '');
+  bar.innerHTML = countHtml + contextHtml + (chips.length ? `<div class="active-filters">${chips.join('')}</div>` : '');
 }
 
 function renderCards() {
@@ -186,47 +270,35 @@ function renderCards() {
   document.querySelectorAll('.card-wrap.flipped').forEach(c => c.classList.remove('flipped'));
   const grid  = document.getElementById('cardGrid');
   const words = getFilteredWords();
-  const total = (vocabulary[currentTab] || []).filter(w => (w.content_type || 'vocab') === currentContentType).length;
-  renderResultBar(total, words.length);
+  const bookTotal = getBookTotal();
+  const typeTotal = getTypeTotal();
+  renderResultBar({ bookTotal, typeTotal, filteredCount: words.length });
+  updateDashboardSummary();
   if (!words.length) {
-    let icon, title, sub, action = '';
-    const allInTab = total;
-
-    if (allInTab === 0) {
-      icon  = currentContentType === 'vocab' ? '📝' : '📂';
-      title = `${BOOK_LABEL[currentTab]} ${CONTENT_LABEL[currentContentType]} 자료가 없어요`;
-      sub   = currentContentType === 'vocab'
-        ? '이 권의 단어 자료가 아직 연결되지 않았어요.<br>관리자 패널에서 추가해보세요!'
-        : '감자도리 원본 HTML에서 이 영역의 자료를 다음 단계에 분할 반영할 예정이에요.';
-    } else if (showBookmarksOnly) {
-      // 북마크 없음
-      icon  = '⭐';
-      title = '북마크한 단어가 없어요';
-      sub   = '카드의 ⭐ 버튼을 눌러 중요한 단어를 저장해보세요!';
-      action = `<button class="empty-action" onclick="document.getElementById('bookmarkFilter').click()">북마크 필터 끄기</button>`;
-    } else if (searchQuery) {
-      // 검색 결과 없음
-      icon  = '🔍';
-      title = `"${searchQuery}" 검색 결과가 없어요`;
-      sub   = '다른 검색어를 입력하거나 필터를 조정해보세요.<br>한국어·중국어·로마자 모두 검색 가능해요!';
-      action = `<button class="empty-action" onclick="document.getElementById('searchInput').value='';searchQuery='';renderCards()">검색 초기화</button>`;
-    } else {
-      // 레벨 필터 결과 없음
-      icon  = '📚';
-      title = `${currentLevel} 단어가 없어요`;
-      sub   = '다른 레벨을 선택하거나 전체 보기를 눌러보세요.';
-      action = `<button class="empty-action" onclick="currentLevel='전체';document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.filter-btn').classList.add('active');renderCards()">전체 보기</button>`;
-    }
-
-    grid.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">${icon}</div>
-      <div class="empty-title">${title}</div>
-      <div class="empty-sub">${sub}</div>
-      ${action}
-    </div>`;
+    grid.innerHTML = buildEmptyState(bookTotal, typeTotal);
     return;
   }
   grid.innerHTML = words.map(w => buildCard(w)).join('');
+}
+
+function buildEmptyState(bookTotal, typeTotal) {
+  const icon = bookTotal ? '🔎' : '📚';
+  const title = '현재 조건에 맞는 단어가 없습니다';
+  const sub = bookTotal
+    ? '다른 학습 유형이나 필터를 선택하거나 전체 단어를 확인해보세요.'
+    : '아직 이 단어장에는 학습 자료가 없습니다. 관리자 화면에서 단어를 추가할 수 있어요.';
+  const addButton = isAdmin
+    ? `<button class="empty-action secondary" onclick="window.location.href='admin.html'">단어 추가하기</button>`
+    : `<button class="empty-action secondary" onclick="showToast('관리자만 단어를 추가할 수 있어요')">단어 추가하기</button>`;
+  return `<div class="empty-state">
+    <div class="empty-icon">${icon}</div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-sub">${sub}<br><small>현재 유형 ${typeTotal}개 / 전체 ${bookTotal}개</small></div>
+    <div class="empty-actions">
+      <button class="empty-action" onclick="showAllWords()">전체 보기</button>
+      ${addButton}
+    </div>
+  </div>`;
 }
 
 function buildCard(w) {
@@ -439,12 +511,14 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   // Mobile tabs
   document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  updateDashboardSummary();
   renderCards();
 }
 
 function switchContentType(type) {
   currentContentType = type;
   document.querySelectorAll('.content-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  updateDashboardSummary();
   renderCards();
 }
 
@@ -464,12 +538,14 @@ function bindEvents() {
   // Filters
   document.querySelectorAll('.filter-btn:not(.bookmark-filter)').forEach(btn =>
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn:not(.bookmark-filter)').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentLevel = btn.dataset.level;
+      setLevelFilter(btn.dataset.level);
       renderCards();
     })
   );
+  document.getElementById('showEmptyBooksBtn')?.addEventListener('click', function() {
+    showAllBooks = !showAllBooks;
+    updateBookVisibility();
+  });
   // Bookmark filter
   document.getElementById('bookmarkFilter').addEventListener('click', function() {
     showBookmarksOnly = !showBookmarksOnly;
@@ -493,6 +569,14 @@ function bindEvents() {
   document.getElementById('adminLink').addEventListener('click', () => {
     window.location.href = 'admin.html';
   });
+  document.getElementById('todayStartBtn').addEventListener('click', () => document.getElementById('flashBtn').click());
+  document.getElementById('reviewBtn').addEventListener('click', () => {
+    showBookmarksOnly = true;
+    document.getElementById('bookmarkFilter').classList.add('active');
+    renderCards();
+    if (getFilteredWords().length) document.getElementById('flashBtn').click();
+  });
+  document.getElementById('allWordsBtn').addEventListener('click', showAllWords);
   document.getElementById('heroFlashBtn').addEventListener('click', () => document.getElementById('flashBtn').click());
   document.getElementById('heroQuizBtn').addEventListener('click', () => document.getElementById('quizBtn').click());
   document.getElementById('heroNumBtn').addEventListener('click', () => document.getElementById('numOpenBtn').click());

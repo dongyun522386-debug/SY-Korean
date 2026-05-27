@@ -22,9 +22,9 @@
     <div class="header-right">
       <div class="progress-pill">학습: <span id="learnedCount">0</span>개 ⭐<span id="bookmarkCount">0</span></div>
       <div class="user-pill">👤 <span id="userName">...</span></div>
-      <button class="admin-link-btn" id="adminLink" style="display:none">🛠 관리</button>
-      <button class="icon-btn" id="darkToggle" title="다크모드">🌙</button>
-      <button class="icon-btn" id="logoutBtn" title="로그아웃">🚪</button>
+      <button class="admin-link-btn" id="adminLink" style="display:none" aria-label="관리 화면으로 이동" title="관리 화면으로 이동">🛠 관리</button>
+      <button class="icon-btn" id="darkToggle" aria-label="다크 모드 전환" title="다크 모드 전환">🌙</button>
+      <button class="icon-btn" id="logoutBtn" aria-label="로그아웃" title="로그아웃">🚪</button>
     </div>
   </div>
 </header>
@@ -35,32 +35,39 @@
 </div>
 
 <main id="mainContent" style="display:none">
-  <section class="learning-hero" aria-label="한국어 단어장 홈">
-    <div class="hero-copy">
-      <div class="hero-kicker">매일 5분 단어 루틴</div>
-      <h2 class="hero-title">한국어 단어 학습을<br>더 쉽고 간편하게</h2>
-      <p class="hero-subtitle">중국어 학습자를 위한 한국어 단어장. 카드를 넘기고, 퀴즈로 확인하고, 숫자 표현까지 한 화면에서 가볍게 익혀보세요.</p>
-      <div class="hero-actions">
-        <button class="hero-action primary" type="button" id="heroFlashBtn">플래시카드 시작</button>
-        <button class="hero-action soft" type="button" id="heroQuizBtn">퀴즈 풀기</button>
-        <button class="hero-action" type="button" id="heroNumBtn">숫자 연습</button>
+  <section class="learning-hero dashboard-hero" aria-label="오늘 학습 대시보드">
+    <div class="today-card">
+      <div class="today-card-top">
+        <div>
+          <div class="hero-kicker" id="dashboardBookName">감자도리 1권</div>
+          <h2 class="hero-title">오늘 학습할 단어 <span id="todayPlanCount">0</span>개</h2>
+          <p class="hero-subtitle">
+            전체 단어 <strong id="dashboardTotalCount">0</strong>개 · 즐겨찾기 <strong id="dashboardBookmarkCount">0</strong>개
+          </p>
+        </div>
+        <div class="today-meter" aria-hidden="true">
+          <span id="todayLearnedMeter">0</span>
+          <small>학습 완료</small>
+        </div>
       </div>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <div class="float-scene">
-        <div class="float-base"></div>
-        <div class="float-card"><em>초급</em><strong>학교</strong><span>[hak-gyo]</span></div>
-        <div class="float-chip">오늘 학습 0개</div>
-        <div class="float-block"></div>
-        <div class="float-star">☆</div>
-        <div class="float-tile">✓</div>
+      <div class="hero-actions dashboard-actions">
+        <button class="hero-action primary" type="button" id="todayStartBtn">오늘 학습 시작</button>
+        <button class="hero-action soft" type="button" id="reviewBtn">복습하기</button>
+        <button class="hero-action" type="button" id="allWordsBtn">전체 단어 보기</button>
+        <button class="hero-action utility" type="button" id="heroFlashBtn">플래시카드</button>
+        <button class="hero-action utility" type="button" id="heroQuizBtn">퀴즈</button>
+        <button class="hero-action utility" type="button" id="heroNumBtn">숫자 연습</button>
       </div>
     </div>
   </section>
 
   <section class="learning-panel" aria-label="학습 대시보드">
     <!-- DESKTOP TABS -->
-    <div class="tabs-desktop" role="tablist">
+    <div class="book-selector-heading">
+      <span>단어장 선택</span>
+      <button class="show-books-btn" type="button" id="showEmptyBooksBtn" aria-expanded="false">다른 단어장 보기</button>
+    </div>
+    <div class="tabs-desktop" role="tablist" aria-label="단어장 선택">
     <button class="tab-btn active" data-tab="book1" role="tab">감자도리 1권 <span class="tab-count" id="cnt-book1">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book1" style="width:0%"></div></div></button>
     <button class="tab-btn" data-tab="book2" role="tab">감자도리 2권 <span class="tab-count" id="cnt-book2">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book2" style="width:0%"></div></div></button>
     <button class="tab-btn" data-tab="book3" role="tab">감자도리 3권 <span class="tab-count" id="cnt-book3">0</span><div class="tab-progress"><div class="tab-progress-fill" id="prg-book3" style="width:0%"></div></div></button>
@@ -69,11 +76,11 @@
     </div>
 
     <div class="content-tabs" role="tablist" aria-label="세부 학습 유형">
-      <button class="content-tab-btn active" data-type="vocab" role="tab">단어</button>
-      <button class="content-tab-btn" data-type="pronunciation" role="tab">발음</button>
-      <button class="content-tab-btn" data-type="dialogue" role="tab">대화</button>
-      <button class="content-tab-btn" data-type="reading" role="tab">읽기</button>
-      <button class="content-tab-btn" data-type="listening" role="tab">듣기</button>
+      <button class="content-tab-btn active" data-type="vocab" role="tab" aria-label="단어 뜻" title="단어 뜻">단어 뜻</button>
+      <button class="content-tab-btn" data-type="pronunciation" role="tab" aria-label="발음 연습" title="발음 연습">발음 연습</button>
+      <button class="content-tab-btn" data-type="dialogue" role="tab" aria-label="예문 대화" title="예문 대화">예문 대화</button>
+      <button class="content-tab-btn" data-type="reading" role="tab" aria-label="읽기 연습" title="읽기 연습">읽기 연습</button>
+      <button class="content-tab-btn" data-type="listening" role="tab" aria-label="듣기 연습" title="듣기 연습">듣기 연습</button>
     </div>
 
     <!-- CONTROLS -->
@@ -158,11 +165,11 @@
 <!-- MOBILE BOTTOM TAB BAR -->
 <nav class="mobile-tabs">
   <div class="mobile-tabs-inner">
-    <button class="mobile-tab-btn active" data-tab="book1"><span class="mt-icon">1</span>1권<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="book2"><span class="mt-icon">2</span>2권<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="book3"><span class="mt-icon">3</span>3권<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="book4"><span class="mt-icon">4</span>4권<div class="mt-bar"></div></button>
-    <button class="mobile-tab-btn" data-tab="book5"><span class="mt-icon">5</span>5권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn active" data-tab="book1" aria-label="감자도리 1권"><span class="mt-icon">1</span>1권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book2" aria-label="감자도리 2권"><span class="mt-icon">2</span>2권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book3" aria-label="감자도리 3권"><span class="mt-icon">3</span>3권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book4" aria-label="감자도리 4권"><span class="mt-icon">4</span>4권<div class="mt-bar"></div></button>
+    <button class="mobile-tab-btn" data-tab="book5" aria-label="감자도리 5권"><span class="mt-icon">5</span>5권<div class="mt-bar"></div></button>
   </div>
 </nav>
 
