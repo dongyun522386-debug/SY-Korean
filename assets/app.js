@@ -27,6 +27,24 @@ let flashWords = [], flashIdx = 0, flashFlipped = false;
 
 const LOCAL_DIALOGUE_ITEMS = window.LOCAL_DIALOGUE_ITEMS || [];
 
+function $(id) {
+  return document.getElementById(id);
+}
+
+function setText(id, value) {
+  const el = $(id);
+  if (el) el.textContent = value;
+}
+
+function setVisible(id, visible) {
+  const el = $(id);
+  if (el) el.style.display = visible ? '' : 'none';
+}
+
+function getAllLearningItems() {
+  return TABS.flatMap(tab => vocabulary[tab] || []);
+}
+
 // ── INIT ───────────────────────────────────────────────
 async function init() {
   applyDarkMode();
@@ -35,10 +53,10 @@ async function init() {
   currentUser = user;
 
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  document.getElementById('userName').textContent = profile?.display_name || user.email.split('@')[0];
+  setText('userName', profile?.display_name || user.email.split('@')[0]);
   if (profile?.role === 'admin') {
     isAdmin = true;
-    document.getElementById('adminLink').style.display = '';
+    setVisible('adminLink', true);
   }
 
   const { data: words, error: wErr } = await sb.from('words').select('*').order('category').order('sort_order');
@@ -54,8 +72,8 @@ async function init() {
   bookmarks    = new Set((progress||[]).filter(p => p.bookmarked).map(p => p.word_id));
   loadLocalProgress();
 
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('mainContent').style.display  = '';
+  setVisible('loadingState', false);
+  setVisible('mainContent', true);
   updateTabCounts();
   updateBookVisibility();
   renderCards();
@@ -65,13 +83,13 @@ async function init() {
 }
 
 function showLoadError(msg) {
-  document.getElementById('loadingState').innerHTML =
+  $('loadingState').innerHTML =
     `<div style="font-size:3rem">⚠️</div><p style="color:var(--accent)">데이터 로드 실패<br><small>${msg}</small></p>`;
 }
 
 function applyDarkMode() {
   document.body.classList.toggle('dark', darkMode);
-  const darkToggle = document.getElementById('darkToggle');
+  const darkToggle = $('darkToggle');
   darkToggle.textContent = darkMode ? '☀️' : '🌙';
   darkToggle.setAttribute('aria-label', darkMode ? '라이트 모드 전환' : '다크 모드 전환');
   darkToggle.setAttribute('title', darkMode ? '라이트 모드 전환' : '다크 모드 전환');
@@ -121,13 +139,13 @@ function loadLocalProgress() {
 }
 
 function findLearningItem(wordId) {
-  return TABS.flatMap(tab => vocabulary[tab] || []).find(w => w.id === wordId);
+  return getAllLearningItems().find(w => w.id === wordId);
 }
 
 function updateTabCounts() {
   TABS.forEach(tab => {
     const words = vocabulary[tab] || [];
-    const el = document.getElementById('cnt-' + tab);
+    const el = $('cnt-' + tab);
     if (el) el.textContent = words.length;
     updateTabProgress(tab);
   });
@@ -138,13 +156,13 @@ function updateTabCounts() {
 function updateTabProgress(tab) {
   const words = vocabulary[tab] || [];
   const pct = words.length ? (words.filter(w => learnedWords.has(w.id)).length / words.length * 100) : 0;
-  const el = document.getElementById('prg-' + tab);
+  const el = $('prg-' + tab);
   if (el) el.style.width = pct + '%';
 }
 
 function updateProgress() {
-  document.getElementById('learnedCount').textContent  = learnedWords.size;
-  document.getElementById('bookmarkCount').textContent = bookmarks.size;
+  setText('learnedCount', learnedWords.size);
+  setText('bookmarkCount', bookmarks.size);
   TABS.forEach(updateTabProgress);
   updateDashboardSummary();
 }
@@ -167,10 +185,6 @@ function updateDashboardSummary() {
   const bookTotal = getBookTotal();
   const todayCount = getTodayTargetCount();
   const bookName = BOOK_LABEL[currentTab] || '감자도리 1권';
-  const setText = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  };
   setText('dashboardBookName', bookName);
   setText('todayPlanCount', todayCount);
   setText('dashboardTotalCount', bookTotal);
@@ -179,7 +193,7 @@ function updateDashboardSummary() {
 }
 
 function updateBookVisibility() {
-  const revealBtn = document.getElementById('showEmptyBooksBtn');
+  const revealBtn = $('showEmptyBooksBtn');
   let hiddenCount = 0;
   TABS.forEach(tab => {
     const shouldHide = !showAllBooks && getBookTotal(tab) === 0 && tab !== currentTab && !isAdmin;
@@ -209,10 +223,10 @@ function resetFilters() {
   showBookmarksOnly = false;
   sortAlpha = false;
   setLevelFilter('전체');
-  const searchInput = document.getElementById('searchInput');
+  const searchInput = $('searchInput');
   if (searchInput) searchInput.value = '';
-  document.getElementById('bookmarkFilter')?.classList.remove('active');
-  document.getElementById('sortBtn')?.classList.remove('active');
+  $('bookmarkFilter')?.classList.remove('active');
+  $('sortBtn')?.classList.remove('active');
 }
 
 function showAllWords() {
@@ -224,6 +238,38 @@ function showAllWords() {
   renderCards();
 }
 
+function clearSearchFilter() {
+  searchQuery = '';
+  const searchInput = $('searchInput');
+  if (searchInput) searchInput.value = '';
+  renderCards();
+}
+
+function clearLevelFilter() {
+  setLevelFilter('전체');
+  renderCards();
+}
+
+function toggleBookmarkFilter() {
+  showBookmarksOnly = !showBookmarksOnly;
+  $('bookmarkFilter')?.classList.toggle('active', showBookmarksOnly);
+  renderCards();
+}
+
+function toggleSortFilter() {
+  sortAlpha = !sortAlpha;
+  $('sortBtn')?.classList.toggle('active', sortAlpha);
+  renderCards();
+}
+
+function openAdminOrToast() {
+  if (isAdmin) {
+    window.location.href = 'admin.html';
+    return;
+  }
+  showToast('관리자만 단어를 추가할 수 있어요');
+}
+
 // ── RENDER ─────────────────────────────────────────────
 function getFilteredWords() {
   let words = [...(vocabulary[currentTab] || [])].filter(w => (w.content_type || 'vocab') === currentContentType);
@@ -231,14 +277,18 @@ function getFilteredWords() {
   if (currentLevel !== '전체') words = words.filter(w => w.level === currentLevel);
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    words = words.filter(w => w.korean.toLowerCase().includes(q) || w.chinese.includes(q) || w.romanization.toLowerCase().includes(q));
+    words = words.filter(w =>
+      String(w.korean || '').toLowerCase().includes(q) ||
+      String(w.chinese || '').toLowerCase().includes(q) ||
+      String(w.romanization || '').toLowerCase().includes(q)
+    );
   }
   if (sortAlpha) words.sort((a, b) => a.korean.localeCompare(b.korean, 'ko'));
   return words;
 }
 
 function renderResultBar({ bookTotal, typeTotal, filteredCount }) {
-  const bar = document.getElementById('resultBar');
+  const bar = $('resultBar');
   if (!bar) return;
 
   const hasActiveCondition = searchQuery || showBookmarksOnly || currentLevel !== '전체' || sortAlpha || typeTotal !== bookTotal;
@@ -250,16 +300,16 @@ function renderResultBar({ bookTotal, typeTotal, filteredCount }) {
   // 활성 필터 칩 생성
   const chips = [];
   if (searchQuery) {
-    chips.push(`<span class="filter-chip" onclick="document.getElementById('searchInput').value='';searchQuery='';renderCards()">🔍 "${esc(searchQuery)}" <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip" onclick="clearSearchFilter()">🔍 "${esc(searchQuery)}" <span class="chip-x">✕</span></span>`);
   }
   if (currentLevel !== '전체') {
-    chips.push(`<span class="filter-chip" onclick="setLevelFilter('전체');renderCards()">${currentLevel} <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip" onclick="clearLevelFilter()">${currentLevel} <span class="chip-x">✕</span></span>`);
   }
   if (showBookmarksOnly) {
-    chips.push(`<span class="filter-chip chip-bookmark" onclick="document.getElementById('bookmarkFilter').click()">⭐ 즐겨찾기 <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip chip-bookmark" onclick="toggleBookmarkFilter()">⭐ 즐겨찾기 <span class="chip-x">✕</span></span>`);
   }
   if (sortAlpha) {
-    chips.push(`<span class="filter-chip chip-sort" onclick="document.getElementById('sortBtn').click()">가나다순 ↕ <span class="chip-x">✕</span></span>`);
+    chips.push(`<span class="filter-chip chip-sort" onclick="toggleSortFilter()">가나다순 ↕ <span class="chip-x">✕</span></span>`);
   }
 
   bar.innerHTML = countHtml + contextHtml + (chips.length ? `<div class="active-filters">${chips.join('')}</div>` : '');
@@ -268,7 +318,7 @@ function renderResultBar({ bookTotal, typeTotal, filteredCount }) {
 function renderCards() {
   // BUG FIX: reset all flipped cards before re-render
   document.querySelectorAll('.card-wrap.flipped').forEach(c => c.classList.remove('flipped'));
-  const grid  = document.getElementById('cardGrid');
+  const grid  = $('cardGrid');
   const words = getFilteredWords();
   const bookTotal = getBookTotal();
   const typeTotal = getTypeTotal();
@@ -287,9 +337,7 @@ function buildEmptyState(bookTotal, typeTotal) {
   const sub = bookTotal
     ? '다른 학습 유형이나 필터를 선택하거나 전체 단어를 확인해보세요.'
     : '아직 이 단어장에는 학습 자료가 없습니다. 관리자 화면에서 단어를 추가할 수 있어요.';
-  const addButton = isAdmin
-    ? `<button class="empty-action secondary" onclick="window.location.href='admin.html'">단어 추가하기</button>`
-    : `<button class="empty-action secondary" onclick="showToast('관리자만 단어를 추가할 수 있어요')">단어 추가하기</button>`;
+  const addButton = `<button class="empty-action secondary" onclick="openAdminOrToast()">단어 추가하기</button>`;
   return `<div class="empty-state">
     <div class="empty-icon">${icon}</div>
     <div class="empty-title">${title}</div>
@@ -542,85 +590,77 @@ function bindEvents() {
       renderCards();
     })
   );
-  document.getElementById('showEmptyBooksBtn')?.addEventListener('click', function() {
+  $('showEmptyBooksBtn')?.addEventListener('click', function() {
     showAllBooks = !showAllBooks;
     updateBookVisibility();
   });
   // Bookmark filter
-  document.getElementById('bookmarkFilter').addEventListener('click', function() {
-    showBookmarksOnly = !showBookmarksOnly;
-    this.classList.toggle('active', showBookmarksOnly);
-    renderCards();
-  });
+  $('bookmarkFilter').addEventListener('click', toggleBookmarkFilter);
   // Sort
-  document.getElementById('sortBtn').addEventListener('click', () => {
-    sortAlpha = !sortAlpha;
-    document.getElementById('sortBtn').classList.toggle('active', sortAlpha);
-    renderCards();
-  });
+  $('sortBtn').addEventListener('click', toggleSortFilter);
   // Search
-  document.getElementById('searchInput').addEventListener('input', e => {
+  $('searchInput').addEventListener('input', e => {
     searchQuery = e.target.value.trim(); renderCards();
   });
   // Quiz
-  document.getElementById('quizBtn').addEventListener('click', () => { quizScore=0; quizTotal=0; startQuiz(); });
-  document.getElementById('quizNextBtn').addEventListener('click', startQuiz);
+  $('quizBtn').addEventListener('click', () => { quizScore=0; quizTotal=0; startQuiz(); });
+  $('quizNextBtn').addEventListener('click', startQuiz);
   // Flashcard
-  document.getElementById('adminLink').addEventListener('click', () => {
+  $('adminLink').addEventListener('click', () => {
     window.location.href = 'admin.html';
   });
-  document.getElementById('todayStartBtn').addEventListener('click', () => document.getElementById('flashBtn').click());
-  document.getElementById('reviewBtn').addEventListener('click', () => {
+  $('todayStartBtn').addEventListener('click', () => $('flashBtn').click());
+  $('reviewBtn').addEventListener('click', () => {
     showBookmarksOnly = true;
-    document.getElementById('bookmarkFilter').classList.add('active');
+    $('bookmarkFilter').classList.add('active');
     renderCards();
-    if (getFilteredWords().length) document.getElementById('flashBtn').click();
+    if (getFilteredWords().length) $('flashBtn').click();
   });
-  document.getElementById('allWordsBtn').addEventListener('click', showAllWords);
-  document.getElementById('heroFlashBtn').addEventListener('click', () => document.getElementById('flashBtn').click());
-  document.getElementById('heroQuizBtn').addEventListener('click', () => document.getElementById('quizBtn').click());
-  document.getElementById('heroNumBtn').addEventListener('click', () => document.getElementById('numOpenBtn').click());
-  document.getElementById('flashBtn').addEventListener('click', openFlashcard);
-  document.getElementById('flashCloseBtn').addEventListener('click', () => document.getElementById('flashOverlay').classList.remove('open'));
-  document.getElementById('flashCard').addEventListener('click', toggleFlashCard);
-  document.getElementById('flashPrev').addEventListener('click', () => moveFlash(-1));
-  document.getElementById('flashSpeak').addEventListener('click', speakFlash);
-  document.getElementById('flashNext').addEventListener('click', () => moveFlash(1));
+  $('allWordsBtn').addEventListener('click', showAllWords);
+  $('heroFlashBtn').addEventListener('click', () => $('flashBtn').click());
+  $('heroQuizBtn').addEventListener('click', () => $('quizBtn').click());
+  $('heroNumBtn').addEventListener('click', () => $('numOpenBtn').click());
+  $('flashBtn').addEventListener('click', openFlashcard);
+  $('flashCloseBtn').addEventListener('click', () => $('flashOverlay').classList.remove('open'));
+  $('flashCard').addEventListener('click', toggleFlashCard);
+  $('flashPrev').addEventListener('click', () => moveFlash(-1));
+  $('flashSpeak').addEventListener('click', speakFlash);
+  $('flashNext').addEventListener('click', () => moveFlash(1));
   // Keyboard shortcuts for flashcard
   document.addEventListener('keydown', e => {
-    if (!document.getElementById('flashOverlay').classList.contains('open')) return;
+    if (!$('flashOverlay').classList.contains('open')) return;
     if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); toggleFlashCard(); }
     if (e.key === 'ArrowRight') moveFlash(1);
     if (e.key === 'ArrowLeft')  moveFlash(-1);
-    if (e.key === 'Escape') document.getElementById('flashOverlay').classList.remove('open');
+    if (e.key === 'Escape') $('flashOverlay').classList.remove('open');
   });
   // Dark mode
-  document.getElementById('darkToggle').addEventListener('click', () => {
+  $('darkToggle').addEventListener('click', () => {
     darkMode = !darkMode; localStorage.setItem('dark_mode', darkMode); applyDarkMode();
   });
   // Logout
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
+  $('logoutBtn').addEventListener('click', async () => {
     await sb.auth.signOut(); window.location.href = 'login.html';
   });
   // Tips
-  document.getElementById('tipsToggle').addEventListener('click', () => {
-    document.getElementById('tipsBody').classList.toggle('open');
-    document.getElementById('tipsToggle').classList.toggle('open');
+  $('tipsToggle').addEventListener('click', () => {
+    $('tipsBody').classList.toggle('open');
+    $('tipsToggle').classList.toggle('open');
   });
   // Quiz close re-enables button
-  document.getElementById('quizCloseBtn').addEventListener('click', () => {
-    document.getElementById('quizOverlay').classList.remove('open');
-    document.getElementById('quizBtn').disabled = false;
+  $('quizCloseBtn').addEventListener('click', () => {
+    $('quizOverlay').classList.remove('open');
+    $('quizBtn').disabled = false;
   });
-  document.getElementById('quizOverlay').addEventListener('click', e => {
+  $('quizOverlay').addEventListener('click', e => {
     if (e.target===e.currentTarget) {
       e.currentTarget.classList.remove('open');
-      document.getElementById('quizBtn').disabled = false;
+      $('quizBtn').disabled = false;
     }
   });
   // Quiz keyboard: 1-4 select answer, Enter=next, Escape=close
   document.addEventListener('keydown', e => {
-    const quizOpen = document.getElementById('quizOverlay').classList.contains('open');
+    const quizOpen = $('quizOverlay').classList.contains('open');
     if (quizOpen) {
       if (!quizAnswered) {
         const opts = document.querySelectorAll('.quiz-opt');
@@ -629,29 +669,29 @@ function bindEvents() {
         else if (e.key==='3' && opts[2]) opts[2].click();
         else if (e.key==='4' && opts[3]) opts[3].click();
       }
-      if (e.key==='Enter') document.getElementById('quizNextBtn').click();
-      if (e.key==='Escape') { document.getElementById('quizCloseBtn').click(); }
+      if (e.key==='Enter') $('quizNextBtn').click();
+      if (e.key==='Escape') { $('quizCloseBtn').click(); }
     }
   });
   // 숫자 연습 modal open
-  document.getElementById('numOpenBtn').addEventListener('click', openNumModal);
-  document.getElementById('numClose').addEventListener('click', () => document.getElementById('numOverlay').classList.remove('open'));
-  document.getElementById('numOverlay').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+  $('numOpenBtn').addEventListener('click', openNumModal);
+  $('numClose').addEventListener('click', () => $('numOverlay').classList.remove('open'));
+  $('numOverlay').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
   // num sub-tabs
   document.querySelectorAll('.num-stab').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.num-stab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const t = btn.dataset.stab;
-    document.getElementById('numPanelTable').style.display = t==='table' ? '' : 'none';
-    document.getElementById('numPanelQuiz').style.display  = t==='quiz'  ? '' : 'none';
-    document.getElementById('numPanelListen').style.display= t==='listen'? '' : 'none';
+    $('numPanelTable').style.display = t==='table' ? '' : 'none';
+    $('numPanelQuiz').style.display  = t==='quiz'  ? '' : 'none';
+    $('numPanelListen').style.display= t==='listen'? '' : 'none';
     if (t==='quiz') startNumQuiz();
     if (t==='listen') startNumListen();
   }));
-  document.getElementById('numQuizRestart').addEventListener('click', startNumQuiz);
-  document.getElementById('numQNext').addEventListener('click', () => { numQAnswered=false; startNumQuestion(); });
-  document.getElementById('numLPlay').addEventListener('click', playNumListen);
-  document.getElementById('numLNext').addEventListener('click', () => { numLAnswered=false; startNumListen(); });
+  $('numQuizRestart').addEventListener('click', startNumQuiz);
+  $('numQNext').addEventListener('click', () => { numQAnswered=false; startNumQuestion(); });
+  $('numLPlay').addEventListener('click', playNumListen);
+  $('numLNext').addEventListener('click', () => { numLAnswered=false; startNumListen(); });
 }
 
 // ── TOAST ──────────────────────────────────────────────
