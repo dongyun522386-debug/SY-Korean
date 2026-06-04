@@ -4,6 +4,6 @@
   "private": true,
   "scripts": {
     "check": "node scripts/check-project.mjs",
-    "build": "npm run check"
+    "build": "npm run check && node scripts/build-static.mjs"
   }
 }
