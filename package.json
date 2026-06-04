@@ -1,0 +1,9 @@
+{
+  "name": "sy-korean-vocabulary",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check-project.mjs",
+    "build": "npm run check"
+  }
+}

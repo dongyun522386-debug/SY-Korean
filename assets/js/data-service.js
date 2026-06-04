@@ -20,6 +20,66 @@ function mergeLocalDialogueItems() {
   });
 }
 
+function createDataLoadError(scope, error) {
+  const message = error?.message || '알 수 없는 오류';
+  return new Error(`${scope}: ${message}`);
+}
+
+async function loadAuthenticatedUser() {
+  const { data, error } = await sb.auth.getUser();
+  if (error?.name === 'AuthSessionMissingError') return null;
+  if (error) throw createDataLoadError('사용자 인증 확인 실패', error);
+  return data.user;
+}
+
+async function loadUserProfile(userId) {
+  const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) throw createDataLoadError('프로필 로드 실패', error);
+  return data;
+}
+
+async function loadLearningItems() {
+  const { data, error } = await sb.from('words').select('*').order('category').order('sort_order');
+  if (error) throw createDataLoadError('학습 자료 로드 실패', error);
+  return data || [];
+}
+
+async function loadUserProgress(userId) {
+  const { data, error } = await sb.from('user_progress').select('word_id,learned,bookmarked').eq('user_id', userId);
+  if (error) throw createDataLoadError('학습 진행률 로드 실패', error);
+  return data || [];
+}
+
+function hydrateLearningData(words, progress) {
+  vocabulary = Object.fromEntries(TABS.map(tab => [tab, []]));
+  learnedWords = new Set(progress.filter(item => item.learned).map(item => item.word_id));
+  bookmarks = new Set(progress.filter(item => item.bookmarked).map(item => item.word_id));
+
+  words.forEach(word => {
+    const normalized = normalizeLearningItem(word);
+    if (vocabulary[normalized.book]) vocabulary[normalized.book].push(normalized);
+  });
+
+  mergeLocalDialogueItems();
+  loadLocalProgress();
+}
+
+async function loadApplicationData() {
+  const user = await loadAuthenticatedUser();
+  if (!user) return { user: null, profile: null };
+
+  currentUser = user;
+  const [profile, words, progress] = await Promise.all([
+    loadUserProfile(user.id),
+    loadLearningItems(),
+    loadUserProgress(user.id)
+  ]);
+
+  hydrateLearningData(words, progress);
+  isAdmin = profile?.role === 'admin';
+  return { user, profile };
+}
+
 function getLocalProgressKey(kind) {
   return `local_${kind}_${currentUser?.id || 'guest'}`;
 }
